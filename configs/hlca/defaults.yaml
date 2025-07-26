@@ -1,0 +1,35 @@
+defaults:
+  doublets:
+    batch: sample
+  split_data:
+    key: ann_level_1
+    values:
+      - Immune
+      - Epithelial
+      - Endothelial
+      - Stroma
+  qc:
+    counts: X
+    hue:
+      - author_annotation
+      - ann_level_2
+      - ann_level_3
+      - ann_level_4
+      - ann_level_5
+      - dataset
+      - donor_id
+      - fresh_or_frozen
+      - sex
+      - lung_condition
+      - reference_genome
+      - sequencing_platform
+      - smoking_status
+      - subject_type
+      - tissue_dissociation_protocol
+      - doubletdetection_score
+      - scrublet_score
+  merge:
+    merge_strategy: inner
+    dask: true
+    backed: true
+    threads: 50
