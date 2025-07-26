@@ -1,0 +1,14 @@
+resources:
+  cpu:
+    partition: preempted
+    qos: normal
+    gpu: 0
+    mem_mb: 100000
+  gpu:
+    partition: gpu
+    qos: normal
+    gpu: 1
+    mem_mb: 100000
+
+os: intel
+cran_url: http://cran.us.r-project.org

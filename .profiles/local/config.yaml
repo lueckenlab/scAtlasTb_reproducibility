@@ -1,0 +1,12 @@
+jobs: 1
+keep-going: False
+rerun-incomplete: True
+printshellcmds: True
+scheduler: greedy
+use-conda: True
+rerun-triggers:
+  - mtime
+  - params
+  - input
+  # - software-env
+  - code

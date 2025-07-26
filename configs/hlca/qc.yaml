@@ -1,0 +1,58 @@
+DATASETS:
+
+  doublets:
+    input:
+      doublets:
+        Banovich_Kropski_2020: data/pipeline/hlca/split_data/dataset~split_study/file_id~HLCA/key~study/value~Banovich_Kropski_2020.zarr
+        Barbry_Leroy_2020: data/pipeline/hlca/split_data/dataset~split_study/file_id~HLCA/key~study/value~Barbry_Leroy_2020.zarr
+        Jain_Misharin_2021: data/pipeline/hlca/split_data/dataset~split_study/file_id~HLCA/key~study/value~Jain_Misharin_2021.zarr
+        Krasnow_2020: data/pipeline/hlca/split_data/dataset~split_study/file_id~HLCA/key~study/value~Krasnow_2020.zarr
+        Lafyatis_Rojas_2019: data/pipeline/hlca/split_data/dataset~split_study/file_id~HLCA/key~study/value~Lafyatis_Rojas_2019.zarr
+        Meyer_2019: data/pipeline/hlca/split_data/dataset~split_study/file_id~HLCA/key~study/value~Meyer_2019.zarr
+        Misharin_2021: data/pipeline/hlca/split_data/dataset~split_study/file_id~HLCA/key~study/value~Misharin_2021.zarr
+        Misharin_Budinger_2018: data/pipeline/hlca/split_data/dataset~split_study/file_id~HLCA/key~study/value~Misharin_Budinger_2018.zarr
+        Nawijn_2021: data/pipeline/hlca/split_data/dataset~split_study/file_id~HLCA/key~study/value~Nawijn_2021.zarr
+        Seibold_2020: data/pipeline/hlca/split_data/dataset~split_study/file_id~HLCA/key~study/value~Seibold_2020.zarr
+      split_data: doublets
+      qc: split_data,data/pipeline/hlca/load_data/download/HLCAv1_core.h5ad
+      merge: qc
+    doublets:
+      batch: sample
+    split_data:
+      backed: false
+      dask: false
+      key: ann_level_1
+      values:
+        - Immune
+        - Epithelial
+        - Endothelial
+        - Stroma
+    qc:
+      counts: X
+      # thresholds_file: configs/hlca/qc_thresholds.tsv
+      hue:
+        - author_annotation
+        - ann_level_2
+        - ann_level_3
+        - ann_level_4
+        - ann_level_5
+        - dataset
+        - donor_id
+        - fresh_or_frozen
+        - sex
+        - lung_condition
+        - reference_genome
+        - sequencing_platform
+        - smoking_status
+        - subject_type
+        - tissue_dissociation_protocol
+        - doubletdetection_score
+        - scrublet_score
+    merge:
+      slots:
+        X: X
+        obs: obs
+        var: var
+      dask: true
+      backed: true
+      threads: 50

@@ -1,0 +1,31 @@
+output_dir: data/pipeline/hlca
+images: data/pipeline/hlca/images
+use_gpu: true
+
+dataset_meta: configs/hlca/datasets.tsv
+schema_file: configs/schema_mapping_tier1.tsv
+
+output_map:
+  preprocessing: data/pipeline/hlca/dataset~{dataset}/file_id~{file_id}/preprocessed.zarr
+
+DATASETS:
+  split_study:
+    input:
+      split_data:
+        HLCA: data/pipeline/hlca/load_data/download/HLCAv1_core.h5ad
+    split_data:
+      dask: false
+      backed: false
+      key: study
+      values:
+        - Banovich_Kropski_2020
+        - Barbry_Leroy_2020
+        - Jain_Misharin_2021
+        - Krasnow_2020
+        - Lafyatis_Rojas_2019
+        - Meyer_2019
+        - Misharin_2021
+        - Misharin_Budinger_2018
+        - Nawijn_2021
+        - Seibold_2020
+        - Teichmann_Meyer_2019

@@ -1,0 +1,67 @@
+cluster:
+  mkdir -p logs/$(date +"%Y_%m_%d") &&
+  sbatch
+    --partition={resources.partition}
+    --gpus={resources.gpu}
+    --cpus-per-task={threads}
+    --mem={resources.mem_mb}
+    --time={resources.time}
+    --job-name={rule}
+    --output=logs/$(date +"%Y_%m_%d")/%j-{rule}.out
+    --parsable
+default-resources:
+  - partition=preempted
+  - gpu=0
+  - mem_mb=32000
+  - disk_mb=20000
+  - time="1-00:00:00"
+restart-times: 2
+max-jobs-per-second: 10
+max-status-checks-per-second: 1
+local-cores: 1
+latency-wait: 120
+jobs: 50
+keep-going: True
+rerun-incomplete: True
+printshellcmds: True
+scheduler: ilp
+use-conda: True
+cluster-cancel: scancel
+cluster-status: .profiles/slurm-status.py
+rerun-triggers:
+  - mtime
+  - params
+  - input
+  - code
+#  - software-env
+show-failed-logs: True
+#shadow-prefix: /hpc/projects/data_lg/michaela.mueller/scratch
+shadow-prefix: /tmp/michaela.mueller
+configfile: configs/optional/comp_czbiohub.yaml
+# groups:
+ # - doublets_scrublet=doublets_scrublet
+ #- doublets_doubletdetection=doublets_doubletdetection
+  # - metrics_prepare=metrics_prepare
+  # - metrics_cluster=metrics_cluster
+  # - metrics_cluster_collect=metrics_cluster
+  # - metrics_run=metrics
+  # - metrics_merge_metrics=merge_metrics
+  # - metrics_merge_metrics_per_batch=merge_metrics
+  # - metrics_merge_metrics_per_dataset=merge_metrics
+  # - metrics_merge_metrics_per_label=merge_metrics
+  # - metrics_merge_metrics_per_file=merge_metrics
+  # - metrics_funkyheatmap=plot_metrics
+  # - metrics_funkyheatmap_per_batch=plot_metrics
+  # - metrics_funkyheatmap_per_dataset=plot_metrics
+  # - metrics_funkyheatmap_per_label=plot_metrics
+  # - metrics_barplot=plot_metrics
+  # - metrics_barplot_per_dataset=plot_metrics
+  # - metrics_barplot_per_file=plot_metrics
+# group-components:
+  # - doublets_scrublet=3
+  # - doublets_doubletdetection=3
+  # - metrics_prepare=5
+  # - metrics_cluster=5
+  # - metrics=10
+  # - merge_metrics=10
+  # - plot_metrics=20

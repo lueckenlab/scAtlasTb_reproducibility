@@ -1,0 +1,26 @@
+latency-wait: "90"
+# jobscript: "lsf_jobscript.sh"
+use-conda: "True"
+use-singularity: "False"
+printshellcmds: "True"
+restart-times: 2
+jobs: 100
+cluster:
+  mkdir -p logs/ &&
+  bsub
+      --gpu={resources.gpu}
+      -q {resources.partition}
+      -n {threads}
+      -M {resources.mem_mb}
+      -W {resources.time}
+      -J {rule}
+      -o logs/%J-{rule}.out
+cluster-status: "lsf_status.py"
+cluster-cancel: "lsf_cancel.py"
+default-resources:
+  - partition=normal
+  - gpu=0
+  - mem_mb=32000
+  - time="24:00"
+max-jobs-per-second: 10
+max-status-checks-per-second: 10
