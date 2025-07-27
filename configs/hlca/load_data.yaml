@@ -6,7 +6,7 @@ dataset_meta: configs/hlca/datasets.tsv
 schema_file: configs/schema_mapping_tier1.tsv
 
 output_map:
-  preprocessing: data/pipeline/hlca/dataset~{dataset}/file_id~{file_id}/preprocessed.zarr
+  preprocessing: data/pipeline/hlca/preprocessing/dataset~{dataset}/file_id~{file_id}/preprocessed.zarr
 
 DATASETS:
   split_study:

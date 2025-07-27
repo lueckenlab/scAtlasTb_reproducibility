@@ -1,0 +1,200 @@
+DATASETS:
+  
+  lineage:
+    input:
+      split_data:
+        All: data/pipeline/hlca/merge/dataset~qc_per_study.zarr
+
+  per_lineage:
+    input:
+      preprocessing:
+        Immune: data/pipeline/hlca/split_data/dataset~lineage/file_id~All/key~ann_level_1/value~Immune.zarr
+        Epithelial: data/pipeline/hlca/split_data/dataset~lineage/file_id~All/key~ann_level_1/value~Epithelial.zarr
+        Endothelial: data/pipeline/hlca/split_data/dataset~lineage/file_id~All/key~ann_level_1/value~Endothelial.zarr
+        Stroma: data/pipeline/hlca/split_data/dataset~lineage/file_id~All/key~ann_level_1/value~Stroma.zarr
+      integration: preprocessing
+      clustering: integration
+      label_transfer: clustering
+    majority_reference:
+      reference_key: ann_finest_level
+      query_key: leiden_1.0_3
+      crosstab_kwargs:
+        dropna: true
+
+  global:
+    input:
+      preprocessing:
+        All : data/pipeline/hlca/merge/dataset~qc_per_study.zarr
+      integration: preprocessing
+      split_data: integration
+      clustering: split_data,integration
+      label_transfer: clustering
+    clustering:
+      recompute_umap: true
+      recompute_neighbors: true
+    majority_reference:
+      reference_key: ann_finest_level
+      query_key: leiden_1.0_3
+      crosstab_kwargs:
+        dropna: true
+
+  Immune:
+    input:
+      metrics:
+        # unintegrated HVG
+        integration=530a81710b--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=530a81710b.zarr"
+        integration=530a81710b--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=530a81710b--split_data_key=ann_level_1--split_data_value=Immune.zarr"
+        # Harmony HVG
+        integration=2dd779c48c--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=2dd779c48c.zarr"
+        integration=2dd779c48c--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=2dd779c48c--split_data_key=ann_level_1--split_data_value=Immune.zarr"
+        # scVI HVG
+        integration=733cb11427--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=733cb11427.zarr"
+        integration=733cb11427--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=733cb11427--split_data_key=ann_level_1--split_data_value=Immune.zarr"
+        # scPoli HVG
+        integration=4ea12c22a8--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=4ea12c22a8.zarr"
+        integration=4ea12c22a8--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=4ea12c22a8--split_data_key=ann_level_1--split_data_value=Immune.zarr"
+        # DRVI HVG
+        integration=289eb06be7--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=289eb06be7.zarr"
+        integration=289eb06be7--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=289eb06be7--split_data_key=ann_level_1--split_data_value=Immune.zarr"
+      marker_genes: metrics
+      collect: marker_genes
+      label_transfer: collect
+    metrics:
+      var_mask:
+        - highly_variable
+      gene_sets: HLCA_immune, HLCA_other
+    label_transfer:
+      majority_consensus:
+        columns:
+          - majority_reference--.*
+
+  Epithelial:
+    input:
+      metrics:
+        # unintegrated HVG
+        integration=530a81710b--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Epithelial--integration=530a81710b.zarr"
+        integration=530a81710b--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=530a81710b--split_data_key=ann_level_1--split_data_value=Epithelial.zarr"
+        # Harmony HVG
+        integration=2dd779c48c--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Epithelial--integration=2dd779c48c.zarr"
+        integration=2dd779c48c--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=2dd779c48c--split_data_key=ann_level_1--split_data_value=Epithelial.zarr"
+        # scVI HVG
+        integration=733cb11427--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Epithelial--integration=733cb11427.zarr"
+        integration=733cb11427--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=733cb11427--split_data_key=ann_level_1--split_data_value=Epithelial.zarr"
+        # scPoli HVG
+        integration=4ea12c22a8--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Epithelial--integration=4ea12c22a8.zarr"
+        integration=4ea12c22a8--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=4ea12c22a8--split_data_key=ann_level_1--split_data_value=Epithelial.zarr"
+        # DRVI HVG
+        integration=289eb06be7--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Epithelial--integration=289eb06be7.zarr"
+        integration=289eb06be7--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=289eb06be7--split_data_key=ann_level_1--split_data_value=Epithelial.zarr"
+      marker_genes: metrics
+      collect: marker_genes
+      label_transfer: collect
+    metrics:
+      var_mask:
+        - highly_variable
+      gene_sets: HLCA_epithelial, HLCA_other
+    label_transfer:
+      majority_consensus:
+        columns:
+          - majority_reference--.*
+
+  Endothelial:
+    input:
+      metrics:
+        # unintegrated HVG
+        integration=530a81710b--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Endothelial--integration=530a81710b.zarr"
+        integration=530a81710b--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=530a81710b--split_data_key=ann_level_1--split_data_value=Endothelial.zarr"
+        # Harmony HVG
+        integration=2dd779c48c--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Endothelial--integration=2dd779c48c.zarr"
+        integration=2dd779c48c--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=2dd779c48c--split_data_key=ann_level_1--split_data_value=Endothelial.zarr"
+        # scVI HVG
+        integration=733cb11427--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Endothelial--integration=733cb11427.zarr"
+        integration=733cb11427--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=733cb11427--split_data_key=ann_level_1--split_data_value=Endothelial.zarr"
+        # scPoli HVG
+        integration=4ea12c22a8--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Endothelial--integration=4ea12c22a8.zarr"
+        integration=4ea12c22a8--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=4ea12c22a8--split_data_key=ann_level_1--split_data_value=Endothelial.zarr"
+        # DRVI HVG
+        integration=289eb06be7--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Endothelial--integration=289eb06be7.zarr"
+        integration=289eb06be7--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=289eb06be7--split_data_key=ann_level_1--split_data_value=Endothelial.zarr"
+      marker_genes: metrics
+      collect: marker_genes
+      label_transfer: collect
+    metrics:
+      var_mask:
+        - highly_variable
+      gene_sets: HLCA_endothelial, HLCA_other
+    label_transfer:
+      majority_consensus:
+        columns:
+          - majority_reference--.*
+
+
+  Stroma:
+    input:
+      metrics:
+        # unintegrated HVG
+        integration=530a81710b--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Stroma--integration=530a81710b.zarr"
+        integration=530a81710b--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=530a81710b--split_data_key=ann_level_1--split_data_value=Stroma.zarr"
+        # Harmony HVG
+        integration=2dd779c48c--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Stroma--integration=2dd779c48c.zarr"
+        integration=2dd779c48c--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=2dd779c48c--split_data_key=ann_level_1--split_data_value=Stroma.zarr"
+        # scVI HVG
+        integration=733cb11427--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Stroma--integration=733cb11427.zarr"
+        integration=733cb11427--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=733cb11427--split_data_key=ann_level_1--split_data_value=Stroma.zarr"
+        # scPoli HVG
+        integration=4ea12c22a8--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Stroma--integration=4ea12c22a8.zarr"
+        integration=4ea12c22a8--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=4ea12c22a8--split_data_key=ann_level_1--split_data_value=Stroma.zarr"
+        # DRVI HVG
+        integration=289eb06be7--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Stroma--integration=289eb06be7.zarr"
+        integration=289eb06be7--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=289eb06be7--split_data_key=ann_level_1--split_data_value=Stroma.zarr"
+      marker_genes: metrics
+      collect: marker_genes
+      label_transfer: collect
+    metrics:
+      var_mask:
+        - highly_variable
+      gene_sets: HLCA_stroma, HLCA_other
+    label_transfer:
+      majority_consensus:
+        columns:
+          - majority_reference--.*

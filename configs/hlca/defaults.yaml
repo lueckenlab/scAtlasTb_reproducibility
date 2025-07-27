@@ -1,6 +1,8 @@
 defaults:
   doublets:
     batch: sample
+    # chunk_size: 100000
+  
   split_data:
     key: ann_level_1
     values:
@@ -8,15 +10,16 @@ defaults:
       - Epithelial
       - Endothelial
       - Stroma
+  
   qc:
     counts: X
     hue:
-      - author_annotation
+      - ann_level_1
       - ann_level_2
       - ann_level_3
-      - ann_level_4
-      - ann_level_5
+      - ann_finest_level
       - dataset
+      - study
       - donor_id
       - fresh_or_frozen
       - sex
@@ -28,8 +31,198 @@ defaults:
       - tissue_dissociation_protocol
       - doubletdetection_score
       - scrublet_score
+  
   merge:
     merge_strategy: inner
+    slots:
+        X: X
+        obs: obs
+        var: var
     dask: true
     backed: true
     threads: 50
+  
+  preprocessing:
+    raw_counts: X
+    normalize:
+      target_sum: 10_000
+    highly_variable_genes:
+      n_top_genes: 2000
+      batch_key: dataset
+    extra_hvgs:
+      overwrite_args:
+        n_top_genes: 2000
+        batch_key: dataset
+      union_over: ann_level_1
+    assemble:
+      - normalize
+      - highly_variable_genes
+      - extra_hvgs
+    colors:
+      - assay
+      - dataset
+      - study
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - ann_finest_level
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
+  
+  integration:
+    raw_counts: layers/counts
+    norm_counts: layers/normcounts
+    var_mask:
+      - highly_variable
+      - extra_hvgs--batch_key=dataset--n_top_genes=2000
+    neighbors:
+      n_neighbors: 100
+    batch: dataset
+    output_types:
+      - embed
+    umap_colors:
+      - assay
+      - dataset
+      - study
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - ann_finest_level
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
+    methods:
+      unintegrated:
+      harmony_pytorch:
+        n_comps: 50
+        scale: true
+      scvi:
+        n_latent: 30
+        n_hidden: 128
+        n_layers: 2
+        dispersion: gene-batch
+        dropout_rate: 0.2
+        early_stopping: true
+        max_epochs: 50
+        use_observed_lib_size: true
+        categorical_covariate_keys:
+          - # no categorical covariates
+          - [assay] # additionally correct for
+      drvi:
+        n_latent: 128
+        encoder_dims:
+          - [128, 128]
+        decoder_dims:
+          - [128, 128]
+        max_epochs: 50
+        early_stopping: true
+      scpoli:
+        cell_type_keys: # unsupervised
+        embedding_dims: 128
+        recon_loss: nb
+        n_epochs: 50
+        unlabeled_prototype_training: false
+        eta: 0.3
+  
+  clustering:
+    algorithm: leiden
+    use_gpu: true
+    neighbors:
+      use_rep: X_emb
+      n_neighbors: 100
+      metric: euclidean
+    resolutions:
+      - 1.0
+    hierarchy:
+      2: 0.5
+      3: 0.2
+    umap_colors:
+      - assay
+      - dataset
+      - study
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - ann_finest_level
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
+  
+  marker_genes:
+    sample: donor_id
+    groups:
+        - leiden_1.0_1
+    #     - leiden_1.0_2
+    marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
+    rank_genes_groups:
+      reference: rest
+      method: wilcoxon
+    plot:
+      n_genes: 20
+    layer: layers/normcounts
+  
+  metrics:
+    unintegrated: layers/normcounts
+    raw_counts: layers/counts
+    var_mask:
+      - highly_variable
+      - extra_hvgs--batch_key=dataset--n_top_genes=2000
+    overwrite_file_id: true
+    weight_batch: 0.4
+    label:
+      - ann_finest_level
+    batch:
+      - dataset
+      # - assay
+    covariates:
+      - disease
+      - percent_mito
+      - scrublet_score
+    metrics:
+      - nmi
+      - ari
+      # - asw_label
+      # - asw_batch
+      - cell_cycle
+      - clisi
+      - ilisi
+      - graph_connectivity
+      - isolated_label_f1
+      - pcr_comparison
+      - morans_i
+      - morans_i_genes
+      # - pcr
+      # - pcr_genes
+      - kbet_pg
+  
+  collect:
+    # obs_index_col:
+    #   .*=lineage: obs_names_before_merge_all
+    sep: --
+    same_slots:
+      - X
+      - var
+      - layers
+    merge_slots:
+      - obs
+      - obsm
+      - obsp
+      - uns
+    skip_slots:
+      - raw
