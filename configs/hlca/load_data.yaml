@@ -1,9 +1,5 @@
 output_dir: data/pipeline/hlca
-images: data/pipeline/hlca/images
-use_gpu: true
-
-dataset_meta: configs/hlca/datasets.tsv
-schema_file: configs/schema_mapping_tier1.tsv
+images: data/images/hlca
 
 output_map:
   preprocessing: data/pipeline/hlca/preprocessing/dataset~{dataset}/file_id~{file_id}/preprocessed.zarr
@@ -12,7 +8,7 @@ DATASETS:
   split_study:
     input:
       split_data:
-        HLCA: data/pipeline/hlca/load_data/download/HLCAv1_core.h5ad
+        HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
     split_data:
       dask: false
       backed: false

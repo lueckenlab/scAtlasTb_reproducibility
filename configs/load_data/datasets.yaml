@@ -1,0 +1,5 @@
+output_dir: data/pipeline
+images: data/images
+
+dataset_meta: configs/load_data/datasets.tsv
+schema_file: configs/load_data/schema_mapping_tier1.tsv

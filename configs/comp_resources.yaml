@@ -1,3 +1,5 @@
+use_gpu: true
+
 resources:
   cpu:
     partition: preempted
