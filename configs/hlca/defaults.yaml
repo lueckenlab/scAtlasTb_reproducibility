@@ -163,6 +163,319 @@ defaults:
       - n_genes
       - n_counts
       - percent_mito
+    # Immmune:
+      - CD53
+      - PTPRC
+      - CORO1A
+    # Monocytes:
+      - FCER1G
+      - C1orf162
+      - CLEC7A
+    # Classical monocytes:
+      - S100A12
+      - FCN1
+      - RNASE2
+    # Non-classical monocytes:
+      - MTSS1
+      - LILRA5
+      - FCN1
+    # DC1:
+      - XCR1
+      - CLEC9A
+      - CLNK
+    # DC2:
+      - PKIB
+      - CLEC10A
+      - CD1E
+    # Plasmacytoid DCs:
+      - SCT
+      - SMPD3
+      - LILRA4
+    # Migratory DCs:
+      - LAD1
+      - CCL19
+    # Alveolar macrophages:
+      - CYP27A1
+      - MARCO
+      - FABP4
+    # Alveolar Mph CCL3+:
+      - CCL20
+      - FAM89A
+    # Alveolar Mph MT-positive:
+      - MT1M
+      - CCL18
+      - MT1E
+    # Alveolar Mph proliferating:
+      - TYMS
+      - CENPW
+      - MND1
+    # Interstitial Mph perivascular:
+      - F13A1
+      - FOLR2
+    # Monocyte-derived Mph:
+      - SPP1
+      - HAMP
+    # Mast cells:
+      - MS4A2
+      - SLC18A2
+      - RGS13
+    # B cell:
+      - MS4A1
+      - CD79A
+    # B naive:
+      - TCL1A
+      - IGHM
+      - IGHD
+    # B memory:
+      - CD27
+      - TNFRSF13B
+    # Plasma cells:
+      - MZB1
+      - JCHAIN
+      - TNFRSF17
+      - ITM2C
+      - DERL3
+      - POU2AF1
+      - IGHA1 # (Igs)
+      - TXNDC11
+      - CD79A
+    # T cell:
+      - ISG20
+      - CCL5
+    # T cell CD4:
+      - CD40LG
+      - TNFRSF25
+      - CD28
+      - CD4
+      - TRAT1
+    # T cell CD8:
+      - CD8A
+      - CD8B
+      - TRGC2
+    # NK cells:
+      - GNLY
+      - SPON2
+      - FCGR3A
+    # T cells proliferating:
+      - CENPW
+      - TK1
+      - MKI67
+  # HLCA_epithelial:
+    # Epithelial:
+      - FXYD3
+      - EPCAM
+      - ELF3
+    # AT:
+      - SFTA2
+      - SLC39A8
+      - HOPX
+    # pre-TB secretory:
+      - SCGB1A1 # from Tata paper
+      - SFTPB
+      - SCGB3A2
+      - RNASE1
+      - SFTA1P
+    # AT0:
+      - SFTPB
+      - SCGB3A2
+      - IGFBP2
+      - SERPINF1
+      - TSPAN1
+      - SFTA2
+    # AT1:
+      - CLIC5
+      - SPOCK2
+      - TIMP3
+    # AT2:
+      - MFSD2A
+      - C8orf4
+      - C11orf96
+    # AT2 proliferating:
+      - CENPW
+      - CDKN3
+      - BIRC5
+    # Ciliated:
+      - IGFBP2
+      - SERPINF1
+      - TSPAN1
+    # Basal resting:
+      - KRT15
+      - KRT17
+      - TP63
+    # Club (nasal):
+      - SERPINB3
+      - TCN1
+      - ASRGL1
+    # Club (non-nasal):
+      - CYP2F1
+      - SCGB3A1
+      - BPIFB1
+    # Deuterosomal:
+      - CDC20B
+      - KDELC2
+      - E2F7
+    # Goblet (bronchial):
+      - GPX8
+      - ALDH1A3
+      - CEACAM5
+    # Goblet (nasal):
+      - CEACAM5
+      - LYPD2
+      - PSCA
+    # Goblet (subsegmental):
+      - BPIFB1
+      - C16orf89
+      - NPDC1
+    # Hillock-like:
+      - DSG3
+      - RAB38
+      - TNS4
+    # Multiciliated (nasal):
+      - BEST4
+      - LYPD2
+    # Multiciliated (non-nasal):
+      - RSPH1
+      - C20orf85
+      - C9orf24
+    # Tuft:
+      - DAB1
+    # Ionocyte:
+      - BSND
+      - IGF1
+      - CLCNKB
+  # HLCA_endothelial:
+    # EC:
+      - CLDN5
+      - ECSCR
+      - CLEC14A
+    # EC aerocyte capillary:
+      - SOSTDC1
+    # EC arterial:
+      - DKK2
+      - IGFBP3
+    # EC general capillary:
+      - SPARCL1
+      - AQP1
+      - RNASE1
+      - IL7R
+      - FCN3
+      - MT1M
+    # EC venous:
+      - SPARCL1
+      - AQP1
+      - RNASE1
+    # EC venous pulmonary:
+      - CPE
+      - C7
+      - MMRN1
+    # EC venous systemic:
+      - TPD52L1
+      - ZNF385D
+      - OLFM1
+    # Lymphatic EC:
+      - CCL21
+      - TFF3
+      - MMRN1
+    # Lymphatic EC differentiating:
+      - PROX1
+      - PKHD1L1
+      - FLT4
+      - SEMA3D
+    # Lymphatic EC mature:
+      - LYVE1
+      - CCL21
+    # Lymphatic EC proliferating:
+      - MKI67
+      - TOP2A
+  # HLCA_stroma:
+    # Stroma:
+      - COL1A2
+      - DCN
+      - MFAP4
+    # Fibroblasts:
+      - LUM
+      - COL6A3
+      - CFD
+    # Adventitial fibroblasts:
+      - MFAP5
+      - SCARA5
+      - PI16
+    # Alveolar fibroblasts:
+      - SPINT2
+      - LIMCH1
+      - FGFR4
+    # Subpleural fibroblasts:
+      - MARCKSL1
+      - APOC1
+      - MMP23B
+    # Peribronchial fibroblasts:
+      - COL15A1
+      - CXCL14
+      - DIO2
+    # Pericytes:
+      - LAMC3
+    # Myofibroblasts:
+      - LMOD1
+      - ATP1B1
+      - TYRP1
+    # Smooth muscle:
+      - MYH11
+      - TINAGL1
+      - PLN
+    # SM FAM83D+:
+      - FAM83D
+    # SM activated stress response:
+      - EGR1
+      - FOSB
+      - ATF3
+    # Submucosal Gland Myoepithelial:
+      - FXYD3
+      - EPCAM
+      - ELF3
+      - TCN1
+      - FAM3D
+    # SMG duct:
+      - CCL28
+      - MGST1
+      - KRT19
+      - KLF5
+    # SMG mucous:
+      - CCL28
+      - BPIFB2
+      - MUC5B
+      - NKX3-1
+    # SMG serous (bronchial):
+      - CCL28
+      - RP11-1143G9.4
+      - S100A1
+      - PRB3
+    # SMG serous (nasal):
+      - CCL28
+      - STATH
+      - ODAM
+      - MUC7
+    # Suprabasal:
+      - IGFBP2
+      - SERPINF1
+      - TSPAN1
+      - KRT5
+      - SERPINB3
+    # Mesothelium:
+      - KLK11
+      - UPK3B
+      - ITLN1
+  # HLCA_other:
+    # Hematopoietic stem cells:
+      - CD53
+      - PTPRC
+      - CORO1A
+      - CRHBP
+      - SERPINE2
+      - MAP7
+    # Neuroendocrine:
+      - CELF3
+      - SLC6A17
+      - CDK5R2
   
   marker_genes:
     sample: donor_id
