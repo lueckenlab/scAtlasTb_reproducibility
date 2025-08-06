@@ -1,7 +1,8 @@
 defaults:
   doublets:
+    counts: raw/X
     batch: sample
-    # chunk_size: 100000
+    chunk_size: 50000
   
   split_data:
     key: ann_level_1
@@ -79,7 +80,6 @@ defaults:
     raw_counts: layers/counts
     norm_counts: layers/normcounts
     var_mask:
-      - highly_variable
       - extra_hvgs--batch_key=dataset--n_top_genes=2000
     neighbors:
       n_neighbors: 100

@@ -17,6 +17,13 @@ DATASETS:
       split_data: doublets
       qc: split_data
       merge: qc
+    split_data:
+      slots:
+        X: raw/X
+        obs: obs
+        var: var
+        obsm: obsm
+        obsp: obsp
     merge:
       slots:
         X: X
