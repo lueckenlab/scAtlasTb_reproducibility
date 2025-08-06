@@ -1,9 +1,9 @@
 MARKER_GENES:
   HLCA_immune:
-    Immmune:
-      - CD53
-      - PTPRC
-      - CORO1A
+    # Immmune:
+    #   - CD53
+    #   - PTPRC
+    #   - CORO1A
     Monocytes:
       - FCER1G
       - C1orf162
@@ -89,6 +89,9 @@ MARKER_GENES:
       - CD8A
       - CD8B
       - TRGC2
+    T regulatory:
+      - FOXP3
+      - RTKN2
     NK cells:
       - GNLY
       - SPON2
