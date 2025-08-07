@@ -6,7 +6,8 @@ pipeline="$(realpath ../scAtlasTb)"
 snakemake \
   --profile .profiles/czbiohub \
   --configfile \
-    configs/comp_resources.yaml  \
-    configs/load_data/datasets.yaml  \
+    .profiles/czbiohub/cluster_config.yaml \
+    configs/global.yaml  \
+    configs/load_data/config.yaml  \
   --snakefile $pipeline/workflow/Snakefile \
     $@

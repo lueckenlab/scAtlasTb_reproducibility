@@ -1,0 +1,11 @@
+resources:
+  cpu:
+    partition: preempted
+    qos: normal
+    gpu: 0
+    mem_mb: 50000
+  gpu:
+    partition: preempted
+    qos: normal
+    gpu: 1
+    mem_mb: 50000

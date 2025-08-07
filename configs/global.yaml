@@ -1,0 +1,3 @@
+os: intel
+cran_url: http://cran.us.r-project.org
+use_gpu: true
