@@ -19,6 +19,8 @@ defaults:
       - ann_level_2
       - ann_level_3
       - ann_finest_level
+      - scanvi_label
+      - assay
       - dataset
       - study
       - donor_id
@@ -67,6 +69,7 @@ defaults:
       - ann_level_2
       - ann_level_3
       - ann_finest_level
+      - scanvi_label
       - majority_reference
       - qc_status
       - lung_condition
@@ -94,6 +97,7 @@ defaults:
       - ann_level_2
       - ann_level_3
       - ann_finest_level
+      - scanvi_label
       - majority_reference
       - qc_status
       - lung_condition
@@ -155,6 +159,7 @@ defaults:
       - ann_level_2
       - ann_level_3
       - ann_finest_level
+      - scanvi_label
       - majority_reference
       - qc_status
       - lung_condition
@@ -496,8 +501,7 @@ defaults:
     var_mask: highly_variable
     overwrite_file_id: true
     weight_batch: 0.3
-    label:
-      - ann_finest_level
+    label: scanvi_label
     batch:
       - dataset
       # - assay
