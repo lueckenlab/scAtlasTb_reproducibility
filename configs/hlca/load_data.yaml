@@ -10,8 +10,8 @@ DATASETS:
       split_data:
         HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
     split_data:
-      dask: false
-      backed: false
+      dask: true
+      backed: true
       key: study
       values:
         - Banovich_Kropski_2020

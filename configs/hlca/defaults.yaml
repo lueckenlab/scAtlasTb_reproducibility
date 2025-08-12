@@ -2,16 +2,18 @@ defaults:
   doublets:
     counts: raw/X
     batch: sample
-    chunk_size: 50000
+    chunk_size: 20000
   
   split_data:
+    dask: true
+    backed: true
     key: ann_level_1
     values:
       - Immune
       - Epithelial
       - Endothelial
       - Stroma
-  
+   
   qc:
     counts: X
     hue:
