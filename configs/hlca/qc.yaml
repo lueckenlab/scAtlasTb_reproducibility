@@ -34,7 +34,8 @@ DATASETS:
     # qc:
     #   thresholds_file: configs/hlca/qc_thresholds.tsv
 
-  doublets_all:
+  qc_all:
     input:
-      split_data: data/pipeline/hlca/merge/dataset~qc_per_study.zarr/
+      split_data:
+        HLCA: data/pipeline/hlca/merge/dataset~qc_per_study.zarr
       qc: split_data
