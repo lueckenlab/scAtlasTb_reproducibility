@@ -1,0 +1,257 @@
+DATASETS:
+
+  HLCA_split_study:
+    input:
+      split_data:
+        # HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
+        HLCA: data/input/HLCA_unfiltered.h5ad
+    
+    split_data:
+      key: study
+      values:
+        - Banovich_Kropski_2020
+        - Barbry_Leroy_2020
+        - Jain_Misharin_2021
+        - Krasnow_2020
+        - Lafyatis_Rojas_2019
+        - Meyer_2019
+        - Misharin_2021
+        - Misharin_Budinger_2018
+        - Nawijn_2021
+        - Seibold_2020
+        - Teichmann_Meyer_2019
+      dask: true
+      backed: true
+      slots:
+        X: layers/counts # raw/X
+        obs: obs
+        var: var
+        obsm: obsm
+        obsp: obsp
+
+
+  HLCA_qc_integration:
+    input:
+      doublets:
+        Banovich_Kropski_2020: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Banovich_Kropski_2020.zarr
+        Barbry_Leroy_2020: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Barbry_Leroy_2020.zarr
+        Jain_Misharin_2021: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Jain_Misharin_2021.zarr
+        Krasnow_2020: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Krasnow_2020.zarr
+        Lafyatis_Rojas_2019: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Lafyatis_Rojas_2019.zarr
+        Meyer_2019: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Meyer_2019.zarr
+        Misharin_2021: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Misharin_2021.zarr
+        Misharin_Budinger_2018: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Misharin_Budinger_2018.zarr
+        Nawijn_2021: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Nawijn_2021.zarr
+        Seibold_2020: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Seibold_2020.zarr
+        Teichmann_Meyer_2019: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Teichmann_Meyer_2019.zarr
+      split_data: doublets
+      qc: split_data
+      merge: qc
+      filter: merge
+      preprocessing: merge, filter
+      integration: preprocessing
+      metrics: integration
+    
+    doublets:
+      counts: X
+      batch: sample
+      chunk_size: 20000
+    
+    split_data:
+      dask: true
+      backed: true
+      key: original_ann_level_1 # ann_level_1
+      values:
+        - Immune
+        - Epithelial
+        - Endothelial
+        - Stroma
+        - Proliferating_cells
+      slots:
+        X: X
+        obs: obs
+        var: var
+        obsm: obsm
+        obsp: obsp
+    
+    qc:
+      counts: X
+      hue:
+        - ann_level_1
+        - ann_level_2
+        - ann_level_3
+        - original_ann_level_1
+        - original_ann_level_2
+        - original_ann_level_3
+        - ann_finest_level
+        - manual_ann
+        - scanvi_label
+        - assay
+        - dataset
+        - study
+        - donor_id
+        - fresh_or_frozen
+        - sex
+        - lung_condition
+        - reference_genome
+        - sequencing_platform
+        - smoking_status
+        - subject_type
+        - tissue_dissociation_protocol
+        - doubletdetection_score
+        - scrublet_score    
+      # thresholds_file: configs/hlca/qc_thresholds.tsv
+
+    merge:
+      merge_strategy: inner
+      slots:
+          X: X
+          obs: obs
+          var: var
+      dask: true
+      backed: true
+      threads: 50
+    
+    filter:
+      subset: true
+      remove_by_column:
+        qc_status:
+          - failed
+
+    preprocessing:
+      raw_counts: X
+      normalize:
+        target_sum: 10_000
+      highly_variable_genes:
+        n_top_genes: 2000
+        batch_key: dataset
+      assemble:
+        - normalize
+        - highly_variable_genes
+      colors:
+        - assay
+        - dataset
+        - study
+        - ann_level_1
+        - ann_level_2
+        - ann_level_3
+        - original_ann_level_1
+        - original_ann_level_2
+        - original_ann_level_3
+        - ann_finest_level
+        - manual_ann
+        - scanvi_label
+        - majority_reference
+        - qc_status
+        - lung_condition
+        - sex
+        - scrublet_score
+        - n_genes
+        - n_counts
+        - percent_mito
+    
+    integration:
+      raw_counts: layers/counts
+      norm_counts: layers/normcounts
+      var_mask:
+        - highly_variable
+      neighbors:
+        n_neighbors: 100
+      batch: dataset
+      output_types:
+        - embed
+      umap_colors:
+        - assay
+        - dataset
+        - study
+        - ann_level_1
+        - ann_level_2
+        - ann_level_3
+        - original_ann_level_1
+        - original_ann_level_2
+        - original_ann_level_3
+        - ann_finest_level
+        - manual_ann
+        - scanvi_label
+        - majority_reference
+        - qc_status
+        - lung_condition
+        - sex
+        - scrublet_score
+        - n_genes
+        - n_counts
+        - percent_mito
+      methods:
+        unintegrated:
+        harmony_pytorch:
+          n_comps: 50
+          scale: true
+        scvi:
+          n_latent: 30
+          n_hidden: 128
+          n_layers: 2
+          dispersion: gene-batch
+          dropout_rate: 0.2
+          early_stopping: true
+          max_epochs: 50
+          use_observed_lib_size: true
+        drvi:
+          n_latent: 128
+          encoder_dims:
+            - [128, 128]
+          decoder_dims:
+            - [128, 128]
+          max_epochs: 50
+          early_stopping: true
+        scpoli:
+          cell_type_keys: # unsupervised
+          embedding_dims: 128
+          recon_loss: nb
+          n_epochs: 50
+          unlabeled_prototype_training: false
+          eta: 0.3
+
+    metrics:
+      unintegrated: layers/normcounts
+      raw_counts: layers/counts
+      var_mask: highly_variable
+      overwrite_file_id: true
+      weight_batch: 0.3
+      label: scanvi_label
+      batch:
+        - dataset
+        # - assay
+      covariates:
+        - disease
+        - percent_mito
+        - scrublet_score
+      metrics:
+        - nmi
+        - ari
+        # - asw_label
+        # - asw_batch
+        - cell_cycle
+        - clisi
+        - ilisi
+        - graph_connectivity
+        - isolated_label_f1
+        - pcr_comparison
+        # - morans_i
+        - morans_i_genes
+        # - pcr
+        # - pcr_genes
+        - kbet_pg
+    
+    collect:
+      sep: --
+      same_slots:
+        - X
+        - var
+        - layers
+      merge_slots:
+        - obs
+        - obsm
+        - obsp
+        - uns
+      skip_slots:
+        - raw
