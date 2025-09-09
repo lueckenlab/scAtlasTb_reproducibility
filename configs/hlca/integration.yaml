@@ -15,11 +15,12 @@ DATASETS:
       integration: preprocessing
       clustering: integration
       label_transfer: clustering
-    majority_reference:
-      reference_key: ann_finest_level
-      query_key: leiden_1.0_3
-      crosstab_kwargs:
-        dropna: true
+    label_transfer:
+      majority_reference:
+        reference_key: ann_finest_level
+        query_key: leiden_1.0_3
+        crosstab_kwargs:
+          dropna: true
 
   global:
     input:
@@ -32,11 +33,12 @@ DATASETS:
     clustering:
       recompute_umap: true
       recompute_neighbors: true
-    majority_reference:
-      reference_key: ann_finest_level
-      query_key: leiden_1.0_3
-      crosstab_kwargs:
-        dropna: true
+    label_transfer:
+      majority_reference:
+        reference_key: ann_finest_level
+        query_key: leiden_1.0_3
+        crosstab_kwargs:
+          dropna: true
     integration:
       var_mask: 
         # - highly_variable
@@ -51,11 +53,12 @@ DATASETS:
     clustering:
       recompute_umap: true
       recompute_neighbors: true
-    majority_reference:
-      reference_key: ann_finest_level
-      query_key: leiden_1.0_3
-      crosstab_kwargs:
-        dropna: true
+    label_transfer:
+      majority_reference:
+        reference_key: ann_finest_level
+        query_key: leiden_1.0_3
+        crosstab_kwargs:
+          dropna: true
 
   Immune:
     input:
@@ -108,9 +111,9 @@ DATASETS:
   Epithelial:
     input:
       metrics:
-        # original scANVI
-        integration=scanvi_ref--strategy=reference: "data/pipeline/hlca/label_transfer/dataset~reference/\
-          file_id~clustering:split_data:HLCA--split_data_key=ann_level_1--split_data_value=Epithelial.zarr"
+        # # original scANVI
+        # integration=scanvi_ref--strategy=reference: "data/pipeline/hlca/label_transfer/dataset~reference/\
+        #   file_id~clustering:split_data:HLCA--split_data_key=ann_level_1--split_data_value=Epithelial.zarr"
         # unintegrated
         integration=24ff6a6128--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
           file_id~clustering:integration:preprocessing:Epithelial--integration=24ff6a6128.zarr"
@@ -156,9 +159,9 @@ DATASETS:
   Endothelial:
     input:
       metrics:
-        # original scANVI
-        integration=scanvi_ref--strategy=reference: "data/pipeline/hlca/label_transfer/dataset~reference/\
-          file_id~clustering:split_data:HLCA--split_data_key=ann_level_1--split_data_value=Endothelial.zarr"
+        # # original scANVI
+        # integration=scanvi_ref--strategy=reference: "data/pipeline/hlca/label_transfer/dataset~reference/\
+        #   file_id~clustering:split_data:HLCA--split_data_key=ann_level_1--split_data_value=Endothelial.zarr"
         # unintegrated
         integration=24ff6a6128--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
           file_id~clustering:integration:preprocessing:Endothelial--integration=24ff6a6128.zarr"
@@ -205,9 +208,9 @@ DATASETS:
   Stroma:
     input:
       metrics:
-        # original scANVI
-        integration=scanvi_ref--strategy=reference: "data/pipeline/hlca/label_transfer/dataset~reference/\
-          file_id~clustering:split_data:HLCA--split_data_key=ann_level_1--split_data_value=Stroma.zarr"
+        # # original scANVI
+        # integration=scanvi_ref--strategy=reference: "data/pipeline/hlca/label_transfer/dataset~reference/\
+        #   file_id~clustering:split_data:HLCA--split_data_key=ann_level_1--split_data_value=Stroma.zarr"
         # unintegrated
         integration=24ff6a6128--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
           file_id~clustering:integration:preprocessing:Stroma--integration=24ff6a6128.zarr"
