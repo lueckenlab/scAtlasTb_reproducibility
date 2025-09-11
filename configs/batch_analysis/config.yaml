@@ -1,0 +1,249 @@
+output_dir: data/pipeline/batch_analysis
+images: data/images/batch_analysis
+
+output_map:
+  preprocessing: data/pipeline/batch_analysis/preprocessing/dataset~{dataset}/file_id~{file_id}/preprocessed.zarr
+
+DATASETS:
+  
+  hlca_per_study:
+    input:
+      split_data:
+        HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
+      preprocessing: split_data
+      merge: preprocessing
+      sample_representation: preprocessing, merge
+      batch_analysis: preprocessing, sample_representation
+    split_data:
+      key: study
+      values:
+        - Banovich_Kropski_2020
+        - Barbry_Leroy_2020
+        - Jain_Misharin_2021
+        - Krasnow_2020
+        - Lafyatis_Rojas_2019
+        - Meyer_2019
+        - Misharin_2021
+        - Misharin_Budinger_2018
+        - Nawijn_2021
+        - Seibold_2020
+        - Teichmann_Meyer_2019
+      dask: false
+      backed: false
+      slots:
+        X: raw/X
+        obs: obs
+        var: var
+        obsm: obsm
+        obsp: obsp
+    merge:
+      dask: true
+      backed: true
+    sample_representation:
+      sample_key: sample,donor_id,tissue_level_2,tissue_level_3
+      raw_counts: X
+      var_mask: highly_variable
+      methods:
+        pseudobulk:
+      colors:
+        - assay
+        - dataset
+        - study
+        - donor_id
+        - fresh_or_frozen
+        - suspension_type
+        - reference_genome
+        - sequencing_platform
+        - tissue_dissociation_protocol
+        - tissue_level_2
+        - tissue_level_3
+        - tissue_sampling_method
+    preprocessing:
+      raw_counts: X
+      normalize:
+        target_sum: 10_000
+      highly_variable_genes:
+        n_top_genes: 2000
+      assemble:
+        - highly_variable_genes
+        - pca
+      colors:
+        - assay
+        - dataset
+        - study
+        - sample
+        - donor_id
+        - ann_level_1
+        - ann_level_2
+        - ann_level_3
+        - ann_finest_level
+        - majority_reference
+        - qc_status
+        - lung_condition
+        - sex
+        - scrublet_score
+        - n_genes
+        - n_counts
+        - percent_mito
+    batch_analysis:
+      sample: sample,donor_id,tissue_level_2,tissue_level_3
+      n_permutations: 100
+      covariates:
+        - assay
+        - dataset
+        - study
+        - donor_id
+        - fresh_or_frozen
+        - suspension_type
+        - reference_genome
+        - sequencing_platform
+        - tissue_dissociation_protocol
+        - tissue_level_2
+        - tissue_level_3
+        - tissue_sampling_method
+
+  batch_correction:
+    input:
+      preprocessing:
+        HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
+      integration: preprocessing
+      clustering: integration
+      label_transfer: clustering
+      metrics: label_transfer
+      collect: metrics
+    preprocessing:
+      raw_counts: raw/X
+      normalize:
+        target_sum: 10_000
+      highly_variable_genes:
+        n_top_genes: 2000
+      assemble:
+        - highly_variable_genes
+        - pca
+      colors:
+        - assay
+        - dataset
+        - study
+        - ann_level_1
+        - ann_level_2
+        - ann_level_3
+        - ann_finest_level
+        - majority_reference
+        - qc_status
+        - lung_condition
+        - sex
+        - scrublet_score
+        - n_genes
+        - n_counts
+        - percent_mito
+    integration:
+      raw_counts: layers/counts
+      norm_counts: layers/normcounts
+      var_mask: highly_variable
+      neighbors:
+        n_neighbors: 100
+      batch:
+        - sample
+        - dataset
+      label: scanvi_label
+      output_types:
+        - embed
+      umap_colors:
+        - assay
+        - dataset
+        - study
+        - sample
+        - donor_id
+        - ann_level_1
+        - ann_level_2
+        - ann_level_3
+        - ann_finest_level
+        - majority_reference
+        - qc_status
+        - lung_condition
+        - sex
+        - scrublet_score
+        - n_genes
+        - n_counts
+        - percent_mito
+      methods:
+        unintegrated:
+        scanvi:
+          n_layers: 2
+          n_latent: 30
+          encode_covariates: True
+          deeply_inject_covariates: False
+          use_layer_norm: both
+          use_batch_norm: none
+          gene_likelihood: nb
+          max_epochs: 200
+          early_stopping: true
+    metrics:
+      unintegrated: layers/normcounts
+      raw_counts: layers/counts
+      var_mask: highly_variable
+      overwrite_file_id: true
+      weight_batch: 0.3
+      label: scanvi_label
+      batch:
+        - dataset
+        - sample
+      covariates:
+        - disease
+        - percent_mito
+        - scrublet_score
+      metrics:
+        - nmi
+        - ari
+        - cell_cycle
+        - clisi
+        - ilisi
+        - graph_connectivity
+        - isolated_label_f1
+        - pcr_comparison
+        - morans_i_genes
+        - kbet_pg
+    collect:
+      sep: --
+      same_slots:
+        - X
+        - var
+        - layers
+      merge_slots:
+        - obs
+        - obsm
+        - obsp
+        - uns
+      skip_slots:
+        - raw
+    clustering:
+      algorithm: leiden
+      use_gpu: true
+      neighbors:
+        use_rep: X_emb
+        n_neighbors: 100
+        metric: euclidean
+      resolutions:
+        - 1.0
+      hierarchy:
+        2: 0.5
+        3: 0.2
+      umap_colors:
+        - assay
+        - dataset
+        - study
+        - ann_level_1
+        - ann_level_2
+        - ann_level_3
+        - ann_finest_level
+        - majority_reference
+        - qc_status
+        - lung_condition
+        - sex
+    label_transfer:
+      majority_reference:
+        reference_key: ann_finest_level
+        query_key: leiden_1.0_3
+        crosstab_kwargs:
+          dropna: true
+      
