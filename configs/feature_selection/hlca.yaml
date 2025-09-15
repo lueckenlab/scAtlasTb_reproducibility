@@ -1,0 +1,120 @@
+DATASETS:
+  
+  lineage:
+    input:
+      split_data:
+        All: data/pipeline/load_data/download/HLCAv1_core.h5ad
+    
+    split_data:
+      dask: true
+      backed: true
+      key: ann_level_1
+      values:
+        - Immune
+        - Epithelial
+        - Endothelial
+        - Stroma
+
+  per_lineage:
+    input:
+      preprocessing:
+        Immune: data/pipeline/hlca/split_data/dataset~lineage/file_id~All/key~ann_level_1/value~Immune.zarr
+        # Epithelial: data/pipeline/hlca/split_data/dataset~lineage/file_id~All/key~ann_level_1/value~Epithelial.zarr
+        # Endothelial: data/pipeline/hlca/split_data/dataset~lineage/file_id~All/key~ann_level_1/value~Endothelial.zarr
+        # Stroma: data/pipeline/hlca/split_data/dataset~lineage/file_id~All/key~ann_level_1/value~Stroma.zarr
+      integration: preprocessing
+      clustering: integration
+      label_transfer: clustering
+    
+    label_transfer:
+      majority_reference:
+        reference_key: ann_finest_level
+        query_key: leiden_1.0_3
+        crosstab_kwargs:
+          dropna: true
+
+  global:
+    input:
+      preprocessing:
+        All: data/pipeline/load_data/download/HLCAv1_core.h5ad
+      integration: preprocessing
+      split_data: integration
+      clustering: split_data # ,integration
+      label_transfer: clustering
+    clustering:
+      recompute_umap: true
+      recompute_neighbors: true
+    label_transfer:
+      majority_reference:
+        reference_key: ann_finest_level
+        query_key: leiden_1.0_3
+        crosstab_kwargs:
+          dropna: true
+    integration:
+      var_mask: 
+        # - highly_variable
+        - extra_hvgs--batch_key=dataset--n_top_genes=2000
+
+  reference:
+    input:
+      split_data:
+        HLCA: data/pipeline/hlca/HLCA_scanvi.zarr
+      clustering: split_data
+      label_transfer: clustering
+    clustering:
+      recompute_umap: true
+      recompute_neighbors: true
+    label_transfer:
+      majority_reference:
+        reference_key: ann_finest_level
+        query_key: leiden_1.0_3
+        crosstab_kwargs:
+          dropna: true
+
+  Immune:
+    input:
+      metrics:
+        # # original scANVI
+        # integration=scanvi_ref--strategy=reference: "data/pipeline/hlca/label_transfer/dataset~reference/\
+        #   file_id~clustering:split_data:HLCA--split_data_key=ann_level_1--split_data_value=Immune.zarr"
+        # unintegrated
+        integration=24ff6a6128--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=24ff6a6128.zarr"
+        integration=24ff6a6128--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=24ff6a6128--split_data_key=ann_level_1--split_data_value=Immune.zarr"
+        # Harmony
+        integration=f4e267c962--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=f4e267c962.zarr"
+        integration=f4e267c962--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=f4e267c962--split_data_key=ann_level_1--split_data_value=Immune.zarr"
+        # scVI
+        integration=2062d25075--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=2062d25075.zarr"
+        integration=2062d25075--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=2062d25075--split_data_key=ann_level_1--split_data_value=Immune.zarr"
+        # # scVI assay
+        # integration=89e3d5f421--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+        #   file_id~clustering:integration:preprocessing:Immune--integration=89e3d5f421.zarr"
+        # integration=89e3d5f421--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+        #   file_id~clustering:split_data:integration:preprocessing:All--integration=89e3d5f421--split_data_key=ann_level_1--split_data_value=Immune.zarr"
+        # scPoli
+        integration=08c6548170--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=08c6548170.zarr"
+        integration=08c6548170--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=08c6548170--split_data_key=ann_level_1--split_data_value=Immune.zarr"
+        # DRVI
+        integration=837ca7f62a--strategy=lineage: "data/pipeline/hlca/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=837ca7f62a.zarr"
+        integration=837ca7f62a--strategy=global: "data/pipeline/hlca/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=837ca7f62a--split_data_key=ann_level_1--split_data_value=Immune.zarr"
+      # marker_genes: metrics
+      collect: metrics
+      label_transfer: collect
+    metrics:
+      var_mask:
+        - highly_variable
+      gene_sets: HLCA_immune, HLCA_other
+    label_transfer:
+      majority_consensus:
+        columns:
+          - majority_reference--.*

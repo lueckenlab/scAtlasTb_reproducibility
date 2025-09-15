@@ -1,0 +1,13 @@
+ann_coarse	lineage
+B cell	Immune
+Endothelial cell	Endothelial
+Epithelial cell	Epithelial
+Macrophage/Monocyte	Immune
+Mast cell	Immune
+NK cell	Immune
+Neutrophils	Immune
+Plasma cell	Immune
+Stromal	Stroma
+T cell	Immune
+cDC	Immune
+pDC	Immune

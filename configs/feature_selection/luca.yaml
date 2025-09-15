@@ -1,0 +1,273 @@
+DATASETS:
+  
+  lineage:
+    input:
+      relabel:
+        All: data/pipeline/load_data/download/LuCA_core.h5ad
+      split_data: relabel
+
+    relabel:
+      new_columns:
+        file: configs/feature_selection/luca_annotation_map.tsv
+        order:
+          - ann_coarse
+          - lineage
+
+  per_lineage:
+    input:
+      preprocessing:
+        Immune: data/pipeline/feature_selection/split_data/dataset~lineage/file_id~relabel:All/key~lineage/value~Immune.zarr
+        # Epithelial: data/pipeline/feature_selection/split_data/dataset~lineage/file_id~relabel:All/key~lineage/value~Epithelial.zarr
+        # Endothelial: data/pipeline/feature_selection/split_data/dataset~lineage/file_id~relabel:All/key~lineage/value~Endothelial.zarr
+        # Stroma: data/pipeline/feature_selection/split_data/dataset~lineage/file_id~relabel:All/key~lineage/value~Stroma.zarr
+      integration: preprocessing
+      clustering: integration
+      label_transfer: clustering
+    
+    label_transfer:
+      majority_reference:
+        reference_key: ann_fine
+        query_key: leiden_1.0_3
+        crosstab_kwargs:
+          dropna: true
+
+  global:
+    input:
+      preprocessing:
+        All: data/pipeline/feature_selection/relabel/dataset~lineage/file_id~All.zarr
+      integration: preprocessing
+      split_data: integration
+      clustering: split_data # ,integration
+      label_transfer: clustering
+    clustering:
+      recompute_umap: true
+      recompute_neighbors: true
+    label_transfer:
+      majority_reference:
+        reference_key: ann_fine
+        query_key: leiden_1.0_3
+        crosstab_kwargs:
+          dropna: true
+    integration:
+      var_mask: 
+        - highly_variable
+        - extra_hvgs--batch_key=dataset--n_top_genes=2000
+
+  Immune:
+    input:
+      metrics:
+        integration=unintegrated--strategy=lineage: "data/pipeline/feature_selection/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=a1218f3a90.zarr"
+        integration=unintegrated--strategy=global: "data/pipeline/feature_selection/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=a1218f3a90--split_data_key=lineage--split_data_value=Immune.zarr"
+        integration=harmony--strategy=lineage: "data/pipeline/feature_selection/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=78b6990a8f.zarr"
+        integration=harmony--strategy=global: "data/pipeline/feature_selection/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=78b6990a8f--split_data_key=lineage--split_data_value=Immune.zarr"
+        integration=scvi--strategy=lineage: "data/pipeline/feature_selection/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=11f2c125d1.zarr"
+        integration=scvi--strategy=global: "data/pipeline/feature_selection/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=11f2c125d1--split_data_key=lineage--split_data_value=Immune.zarr"
+        integration=62954d6348--strategy=lineage: "data/pipeline/feature_selection/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=62954d6348.zarr"
+        integration=62954d6348--strategy=global: "data/pipeline/feature_selection/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=62954d6348--split_data_key=lineage--split_data_value=Immune.zarr"
+        integration=drvi--strategy=lineage: "data/pipeline/feature_selection/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=451bff3e4d.zarr"
+        integration=drvi--strategy=global: "data/pipeline/feature_selection/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=451bff3e4d--split_data_key=lineage--split_data_value=Immune.zarr"
+        integration=scpoli--strategy=lineage: "data/pipeline/feature_selection/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=6abc1ac9cb.zarr"
+        integration=scpoli--strategy=global: "data/pipeline/feature_selection/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=6abc1ac9cb--split_data_key=lineage--split_data_value=Immune.zarr"
+      collect: metrics
+      label_transfer: collect
+    
+    metrics:
+      var_mask: highly_variable
+      gene_sets: HLCA_immune, HLCA_other
+    
+    label_transfer:
+      majority_consensus:
+        columns:
+          - majority_reference--.*
+
+
+defaults:
+  split_data:
+    dask: true
+    backed: true
+    key: lineage
+    values:
+      - Immune
+      - Epithelial
+      - Endothelial
+      - Stroma
+
+  preprocessing:
+    raw_counts: layers/count
+    normalize:
+      target_sum: 10_000
+    highly_variable_genes:
+      n_top_genes: 2000
+      batch_key: dataset
+    extra_hvgs:
+      overwrite_args:
+        n_top_genes: 2000
+        batch_key: dataset
+      union_over: lineage
+    assemble:
+      - normalize
+      - highly_variable_genes
+      - extra_hvgs
+    colors:
+      - assay
+      - dataset
+      - study
+      - lineage
+      - ann_fine
+      - majority_reference
+      - disease
+      - cell_type_tumor
+      - tumor_type
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
+  
+  integration:
+    raw_counts: layers/counts
+    norm_counts: layers/normcounts
+    var_mask: highly_variable
+    neighbors:
+      n_neighbors: 100
+    batch: sample
+    label: ann_fine
+    output_types:
+      - embed
+    umap_colors:
+      - assay
+      - dataset
+      - study
+      - lineage
+      - ann_fine
+      - majority_reference
+      - disease
+      - cell_type_tumor
+      - tumor_type
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
+    methods:
+      unintegrated:
+      harmony_pytorch:
+        n_comps: 50
+        scale: false
+      scvi:
+        n_latent: 30
+        n_hidden: 128
+        n_layers: 2
+        dispersion: gene-batch
+        dropout_rate: 0.2
+        early_stopping: true
+        max_epochs: 50
+        use_observed_lib_size: true
+      scanvi:
+        n_latent: 30
+        n_hidden: 128
+        n_layers: 2
+        dispersion: gene-batch
+        dropout_rate: 0.2
+        early_stopping: true
+        max_epochs: 50
+        use_observed_lib_size: true
+      drvi:
+        n_latent: 128
+        encoder_dims:
+          - [128, 128]
+        decoder_dims:
+          - [128, 128]
+        max_epochs: 50
+        early_stopping: true
+      scpoli:
+        cell_type_keys: # unsupervised
+        embedding_dims: 128
+        recon_loss: nb
+        n_epochs: 50
+        unlabeled_prototype_training: false
+        eta: 0.3
+  
+  clustering:
+    algorithm: leiden
+    use_gpu: true
+    neighbors:
+      use_rep: X_emb
+      n_neighbors: 100
+    resolutions:
+      - 1.0
+    hierarchy:
+      2: 0.5
+      3: 0.2
+    umap_colors:
+      - assay
+      - dataset
+      - study
+      - lineage
+      - ann_fine
+      - majority_reference
+      - disease
+      - cell_type_tumor
+      - tumor_type
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
+
+  metrics:
+    unintegrated: layers/normcounts
+    raw_counts: layers/counts
+    var_mask: highly_variable
+    overwrite_file_id: true
+    weight_batch: 0.3
+    label: ann_fine
+    batch:
+      - dataset
+      # - assay
+    covariates:
+      - disease
+      - percent_mito
+      - scrublet_score
+    metrics:
+      - nmi
+      - ari
+      # - asw_label
+      # - asw_batch
+      - cell_cycle
+      - clisi
+      - ilisi
+      - graph_connectivity
+      - isolated_label_f1
+      - pcr_comparison
+      # - morans_i
+      - morans_i_genes
+      # - pcr
+      # - pcr_genes
+      - kbet_pg
+
+  collect:
+    sep: --
+    same_slots:
+      - X
+      - var
+      - layers
+    merge_slots:
+      - obs
+      - obsm
+      - obsp
+      - uns
+    skip_slots:
+      - raw

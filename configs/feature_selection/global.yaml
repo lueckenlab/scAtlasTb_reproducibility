@@ -1,0 +1,5 @@
+output_dir: data/pipeline/feature_selection
+images: data/images/feature_selection
+
+output_map:
+  preprocessing: data/pipeline/feature_selection/preprocessing/dataset~{dataset}/file_id~{file_id}/preprocessed.zarr
