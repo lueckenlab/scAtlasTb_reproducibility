@@ -22,6 +22,7 @@ DATASETS:
         - Teichmann_Meyer_2019
       dask: true
       backed: true
+      threads: 50
       slots:
         X: layers/counts # raw/X
         obs: obs
@@ -30,7 +31,7 @@ DATASETS:
         obsp: obsp
 
 
-  HLCA_qc_integration:
+  HLCA_qc:
     input:
       doublets:
         Banovich_Kropski_2020: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Banovich_Kropski_2020.zarr
@@ -47,11 +48,7 @@ DATASETS:
       split_data: doublets
       qc: split_data
       merge: qc
-      filter: merge
-      preprocessing: merge, filter
-      integration: preprocessing
-      metrics: integration
-    
+
     doublets:
       counts: X
       batch: sample
@@ -90,6 +87,7 @@ DATASETS:
         - dataset
         - study
         - donor_id
+        - subject_ID
         - sample
         - fresh_or_frozen
         - sex
@@ -100,7 +98,17 @@ DATASETS:
         - subject_type
         - tissue_dissociation_protocol
         - doubletdetection_score
-        - scrublet_score    
+        - scrublet_score
+      scautoqc_metrics_params: configs/qc/scautoqc_params.tsv
+      scautoqc_gaussian_kwargs:
+        threshold: 0.1
+      scautoqc_metrics:
+        - n_counts
+        - n_genes
+        - percent_mito
+        - percent_ribo
+        - percent_hb
+        - scrublet_score
       # thresholds_file: configs/hlca/qc_thresholds.tsv
 
     merge:
@@ -113,55 +121,143 @@ DATASETS:
       backed: true
       threads: 50
     
+
+  HCA_integration_all:
+    input:
+      preprocessing:
+        all: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
+      integration: preprocessing
+      metrics: integration
+      clustering: metrics
+      label_transfer: clustering
+      marker_genes: label_transfer
+      collect: marker_genes
+
+
+  HCA_integration_filtered:
+    input:
+      filter:
+        qc: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
+      preprocessing: filter
+      integration: preprocessing
+      metrics: integration
+      clustering: metrics
+      label_transfer: clustering
+      marker_genes: label_transfer
+      collect: marker_genes
+    
     filter:
       subset: true
       remove_by_column:
         qc_status:
           - failed
 
-    preprocessing:
-      raw_counts: X
-      normalize:
-        target_sum: 10_000
-      highly_variable_genes:
-        n_top_genes: 2000
-        batch_key: dataset
-      assemble:
-        - normalize
-        - highly_variable_genes
-      colors:
-        - assay
-        - dataset
-        - study
-        - ann_level_1
-        - ann_level_2
-        - ann_level_3
-        - original_ann_level_1
-        - original_ann_level_2
-        - original_ann_level_3
-        - ann_finest_level
-        - manual_ann
-        - scanvi_label
-        - majority_reference
-        - qc_status
-        - lung_condition
-        - sex
-        - scrublet_score
-        - n_genes
-        - n_counts
-        - percent_mito
-    
-    integration:
-      batch: dataset
-      label: scanvi_label
-      raw_counts: layers/counts
-      norm_counts: layers/normcounts
-      var_mask:
-        - highly_variable
+
+defaults:
+
+  preprocessing:
+    raw_counts: X
+    normalize:
+      target_sum: 10_000
+    highly_variable_genes:
+      n_top_genes: 2000
+      batch_key: dataset
+      dask: false
+    assemble:
+      - normalize
+      - highly_variable_genes
+    colors:
+      - assay
+      - dataset
+      - study
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - original_ann_level_1
+      - original_ann_level_2
+      - original_ann_level_3
+      - ann_finest_level
+      - manual_ann
+      - scanvi_label
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
+  
+  integration:
+    batch: dataset
+    label: scanvi_label
+    raw_counts: layers/counts
+    norm_counts: layers/normcounts
+    var_mask:
+      - highly_variable
+    neighbors:
+      n_neighbors: 100
+    output_types:
+      - embed
+    umap_colors:
+      - assay
+      - dataset
+      - study
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - original_ann_level_1
+      - original_ann_level_2
+      - original_ann_level_3
+      - ann_finest_level
+      - manual_ann
+      - scanvi_label
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
+    methods:
+      unintegrated:
+      harmony_pytorch:
+        n_comps: 50
+        scale: false
+      scvi:
+        n_layers: 2
+        n_latent: 30
+        encode_covariates: True
+        deeply_inject_covariates: False
+        use_layer_norm: both
+        use_batch_norm: none
+        gene_likelihood: nb
+        max_epochs: 200
+        early_stopping: true
+      scanvi:
+        n_layers: 2
+        n_latent: 30
+        encode_covariates: True
+        deeply_inject_covariates: False
+        use_layer_norm: both
+        use_batch_norm: none
+        gene_likelihood: nb
+        max_epochs: 200
+        early_stopping: true
+
+  clustering:
+      algorithm: leiden
+      use_gpu: true
       neighbors:
+        use_rep: X_emb
         n_neighbors: 100
-      output_types:
-        - embed
+        metric: euclidean
+      resolutions:
+        - 1.0
+      hierarchy:
+        2: 0.5
+        3: 0.2
       umap_colors:
         - assay
         - dataset
@@ -183,73 +279,68 @@ DATASETS:
         - n_genes
         - n_counts
         - percent_mito
-      methods:
-        unintegrated:
-        harmony_pytorch:
-          n_comps: 50
-          scale: false
-        scvi:
-          n_layers: 2
-          n_latent: 30
-          encode_covariates: True
-          deeply_inject_covariates: False
-          use_layer_norm: both
-          use_batch_norm: none
-          gene_likelihood: nb
-          max_epochs: 50
-          early_stopping: true
-        scanvi:
-          n_layers: 2
-          n_latent: 30
-          encode_covariates: True
-          deeply_inject_covariates: False
-          use_layer_norm: both
-          use_batch_norm: none
-          gene_likelihood: nb
-          max_epochs: 200
-          early_stopping: true
 
+  metrics:
+    unintegrated: layers/normcounts
+    raw_counts: layers/counts
+    var_mask: highly_variable
+    # overwrite_file_id: true
+    weight_batch: 0.4
+    label: scanvi_label
+    batch:
+      - dataset
+      # - assay
+    covariates:
+      - disease
+      - percent_mito
+      - scrublet_score
     metrics:
-      unintegrated: layers/normcounts
-      raw_counts: layers/counts
-      var_mask: highly_variable
-      # overwrite_file_id: true
-      weight_batch: 0.3
-      label: scanvi_label
-      batch:
-        - dataset
-        # - assay
-      covariates:
-        - disease
-        - percent_mito
-        - scrublet_score
-      metrics:
-        - nmi
-        - ari
-        # - asw_label
-        # - asw_batch
-        - cell_cycle
-        - clisi
-        - ilisi
-        - graph_connectivity
-        - isolated_label_f1
-        - pcr_comparison
-        # - morans_i
-        # - morans_i_genes
-        # - pcr
-        # - pcr_genes
-        - kbet_pg
-    
-    collect:
-      sep: --
-      same_slots:
-        - X
-        - var
-        - layers
-      merge_slots:
-        - obs
-        - obsm
-        - obsp
-        - uns
-      skip_slots:
-        - raw
+      - nmi
+      - ari
+      # - asw_label
+      # - asw_batch
+      - cell_cycle
+      - clisi
+      - ilisi
+      - graph_connectivity
+      - isolated_label_f1
+      - pcr_comparison
+      # - morans_i
+      # - morans_i_genes
+      # - pcr
+      # - pcr_genes
+      - kbet_pg
+  
+  marker_genes:
+    sample: subject_ID
+    groups:
+      - manual_ann
+      - leiden_1.0_1
+    marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
+    rank_genes_groups:
+      reference: rest
+      method: wilcoxon
+    plot:
+      n_genes: 20
+    layer: layers/normcounts
+
+  label_transfer:
+    majority_reference:
+      reference_key: manual_ann
+      query_key: leiden_1.0_3
+      crosstab_kwargs:
+        dropna: true
+
+  collect:
+    sep: --
+    same_slots:
+      - X
+      - var
+      - layers
+    merge_slots:
+      - obs
+      - obsm
+      - obsp
+      - uns
+    skip_slots:
+      - raw
