@@ -6,6 +6,130 @@ output_map:
 
 DATASETS:
   
+  batch_analysis_all:
+    input:
+      batch_analysis:
+        HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
+      split_data:
+        HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
+      marker_genes: split_data
+    
+    batch_analysis:
+      sample: sample,donor_id,tissue_level_2,tissue_level_3
+      n_permutations: 1000
+      threads: 20
+      highly_variable_genes:
+        n_top_genes: 2000
+      pca:
+      covariates:
+        - assay
+        - dataset
+        - study
+        - donor_id
+        - fresh_or_frozen
+        - suspension_type
+        - reference_genome
+        - tissue_dissociation_protocol
+        - tissue_level_2
+        - tissue_level_3
+        - tissue_sampling_method
+        # - sample
+        - total_counts
+        - log10_total_counts
+        - percent_mito
+        - 3'_or_5
+        - BMI
+        - cell_ranger_version"
+        - cell_viability_%
+        - ethnicity
+        - sample_type
+        - sequencing_platform
+        - sex
+        - single_cell_platform
+        - smoking_status
+        - subject_type
+        - subject_ID
+        - anatomical_region_coarse
+        - age_in_years
+        - original_celltype_ann
+        - Processing_site
+    
+    split_data:
+      key: ann_finest_level
+      values:
+        - Alveolar_macrophages
+        - AT2
+        - Suprabasal
+        - Basal_resting
+        - Goblet_(nasal)
+        - Multiciliated_(non-nasal)
+        - CD8_T_cells
+        - Monocyte-derived_Mph
+        - Club_(nasal)
+        - CD4_T_cells
+        - Classical_monocytes
+        - NK_cells
+        - EC_general_capillary
+        - Adventitial_fibroblasts
+        - Club_(non-nasal)
+        - DC2
+        - Non-classical_monocytes
+        - Alveolar_Mph_CCL3+
+        - AT1
+        - EC_arterial
+        - EC_aerocyte_capillary
+        - Mast_cells
+        - EC_venous_systemic
+        - EC_venous_pulmonary
+        - Alveolar_fibroblasts
+        - Multiciliated_(nasal)
+        - Interstitial_Mph_perivascular
+        - Hillock-like
+        - B_cells
+        - pre-TB_secretory
+        - Lymphatic_EC_mature
+        - Pericytes
+        - Smooth_muscle
+        - Plasma_cells
+        - Goblet_(bronchial)
+        - Peribronchial_fibroblasts
+        - SMG_serous_(nasal)
+        - AT0
+        - SMG_serous_(bronchial)
+        - SMG_duct
+        - Alveolar_Mph_MT-positive
+        - Alveolar_Mph_proliferating
+        - Deuterosomal
+        - AT2_proliferating
+        - Goblet_(subsegmental)
+        - Myofibroblasts
+        - Lymphatic_EC_differentiating
+        - Ionocyte
+        - SM_activated_stress_response
+        - Plasmacytoid_DCs
+        - SMG_mucous
+        - T_cells_proliferating
+        - Smooth_muscle_FAM83D+
+        - DC1
+        - Migratory_DCs
+        - Subpleural_fibroblasts
+        - Mesothelium
+        - Tuft
+        - Neuroendocrine
+        - Hematopoietic_stem_cells
+        - Lymphatic_EC_proliferating
+
+    marker_genes:
+      layer: X
+      sample: sample
+      groups: dataset
+      # marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
+      rank_genes_groups:
+        reference: rest
+        method: wilcoxon
+      plot:
+        n_genes: 10
+
   hlca_per_study:
     input:
       split_data:
