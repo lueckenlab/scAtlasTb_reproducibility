@@ -1,0 +1,252 @@
+output_dir: data/pipeline/feature_selection/HICA
+images: data/images/feature_selection/HICA
+
+
+output_map:
+  preprocessing: data/pipeline/feature_selection/HICA/preprocessing/dataset~{dataset}/file_id~{file_id}/preprocessed.zarr
+
+resources:
+  cpu:
+    partition: preempted
+    qos: normal
+    gpu: 0
+    mem_mb: 100_000
+  gpu:
+    partition: preempted
+    qos: normal
+    gpu: 1
+    mem_mb: 100_000
+
+
+defaults:
+
+  split_data:
+    key: lineage
+    values:
+      - TCD4_cells
+      - TCD8_NK_cells
+      - B_cells
+      - Myeloid
+      - Other
+
+  preprocessing:
+    raw_counts: X
+    normalize:
+      target_sum: 10_000
+    highly_variable_genes:
+      n_top_genes: 5000
+      batch_key: library_id
+      dask: false
+    extra_hvgs:
+      overwrite_args:
+        n_top_genes: 3000
+        batch_key: library_id
+      dask: false
+      remove_genes:
+        - XIST
+        # other sex determining genes
+        - https://raw.githubusercontent.com/prabhakarlab/AIDA_Phase1/master/01_QualityControl/list_chrY_nonPAR_genes.txt
+        # immunoglobulin genes
+        - ^IGK.*
+        - ^IGL.*
+        - ^IGHV.*
+        - ^IGHD.*
+        - ^IGHJ.*
+        - ^TRAV.*
+        - ^TRAJ.*
+        - ^TRBV.*
+        - ^TRBD.*
+        - ^TRBJ.*
+      extra_genes:
+        # heavy chain Ig genes
+        - IGHA1-2
+        - IGHD
+        - IGHE
+        - IGHG1-4
+        - IGHM
+    assemble:
+      - normalize
+      - highly_variable_genes
+      - extra_hvgs
+    colors:
+      - batch
+      - pool
+      - study
+      - celltypist_Healthy_COVID19_PBMC:majority_voting
+      - lineage
+      - author_annotation
+      - disease
+      - sex
+      - assay
+      - CXCL10
+      - IFI6
+      - XIST
+  
+  integration:
+    threads: 20
+    raw_counts: layers/counts
+    norm_counts: layers/normcounts
+    var_mask:
+      - extra_hvgs--batch_key=dataset--n_top_genes=3000
+      - highly_variable
+    neighbors:
+      n_neighbors: 100
+    batch: library_id
+    output_types:
+      - embed
+    umap_colors:
+      - assay
+      - batch
+      - study
+      - lineage
+      - celltypist_Healthy_COVID19_PBMC:majority_voting
+      - celltypist_COVID19_HumanChallenge_Blood:majority_voting
+      - majority_reference
+      - disease
+      - sex
+      - self_reported_ethnicity
+      - CXCL10
+      - IFI6
+      - XIST
+      # platelet markers
+      - PPBP
+      - TUBB1
+      - ITGA2B
+      - PF4
+      - GP1BB
+      # Red Blood Cell markers
+      - HBA1
+      - HBA2
+      - HBB
+      # # T cell
+      - CD4
+      - CD8A
+    methods:
+      unintegrated:
+      harmony_pytorch:
+        n_comps: 30
+        scale:
+          - true
+          - false
+      scvi:
+        n_latent: [30, 128]
+        n_hidden: 128
+        n_layers: 2
+        dispersion: gene-batch
+        dropout_rate: 0.2
+        early_stopping: true
+        max_epochs: 50
+        use_observed_lib_size: true
+      drvi:
+        n_latent: 128
+        encoder_dims:
+          - [128, 128]
+        decoder_dims:
+          - [128, 128]
+        max_epochs: 50
+        early_stopping: true
+      scpoli:
+        cell_type_keys:
+          - # unsupervised
+        embedding_dims: 128
+        recon_loss: nb
+        n_epochs: 50
+        unlabeled_prototype_training: false
+        eta: 0.3
+  
+  clustering:
+    algorithm: leiden
+    use_gpu: false
+    neighbors:
+      use_rep: X_emb
+      n_neighbors: 100
+      metric: euclidean
+    umap_colors:
+      - assay
+      - batch
+      - study
+      - lineage
+      - celltypist_Healthy_COVID19_PBMC:majority_voting
+      - celltypist_COVID19_HumanChallenge_Blood:majority_voting
+      - majority_reference
+      - qc_status
+      - disease
+      - self_reported_ethnicity
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
+      - CXCL10
+      - IFI6
+      - XIST
+      # platelet markers
+      - PPBP
+      - TUBB1
+      - ITGA2B
+      - PF4
+      - GP1BB
+      # Red Blood Cell markers
+      - HBA1
+      - HBA2
+      - HBB
+      # # T cell
+      - CD4
+      - CD8A
+  
+  metrics:
+    unintegrated: layers/normcounts
+    raw_counts: layers/counts
+    var_mask: extra_hvgs--batch_key=dataset--n_top_genes=3000
+    overwrite_file_id: true
+    weight_batch: 0.4
+    label:
+      - celltypist_COVID19_HumanChallenge_Blood:majority_voting
+    batch:
+      - library_id
+      # - study
+      # - assay
+    covariates:
+      - disease
+    gene_sets: HICA_metrics
+    metrics:
+      - nmi
+      - ari
+      # - asw_label
+      # - asw_batch
+      - cell_cycle
+      - clisi
+      - ilisi
+      - graph_connectivity
+      - isolated_label_f1
+      - pcr_comparison
+      - morans_i
+      - morans_i_genes
+      - kbet_pg
+
+  marker_genes:
+    sample: donor_id
+    groups:
+        - leiden_1.0_1
+        # - leiden_1.0_2
+    # marker_genes: T_NK_cells,Myeloid,B_plasma,Other
+    rank_genes_groups:
+      reference: rest
+      method: wilcoxon
+    plot:
+      n_genes: 20
+    layer: layers/normcounts
+  
+  collect:
+    sep: --
+    same_slots:
+      - var
+      - layers
+    merge_slots:
+      - obs
+      - obsm
+      - obsp
+      - uns
+    skip_slots:
+      - X
+      - raw
