@@ -239,6 +239,8 @@ DATASETS:
       marker_genes: label_transfer
       metrics: marker_genes
       collect: metrics
+      majority_voting: collect
+    
     preprocessing:
       raw_counts: raw/X
       normalize:
@@ -264,6 +266,7 @@ DATASETS:
         - n_genes
         - n_counts
         - percent_mito
+    
     integration:
       raw_counts: layers/counts
       norm_counts: layers/normcounts
@@ -295,7 +298,19 @@ DATASETS:
         - n_counts
         - percent_mito
       methods:
-        unintegrated:
+        harmony_pytorch:
+          n_comps: 50
+          scale: false
+        scvi:
+          n_layers: 2
+          n_latent: 30
+          encode_covariates: True
+          deeply_inject_covariates: False
+          use_layer_norm: both
+          use_batch_norm: none
+          gene_likelihood: nb
+          max_epochs: 100
+          early_stopping: true
         scanvi:
           n_layers: 2
           n_latent: 30
@@ -304,22 +319,64 @@ DATASETS:
           use_layer_norm: both
           use_batch_norm: none
           gene_likelihood: nb
-          max_epochs: 200
+          max_epochs: 100
           early_stopping: true
+    
     metrics:
       unintegrated: layers/normcounts
       raw_counts: layers/counts
       var_mask: highly_variable
       overwrite_file_id: true
-      weight_batch: 0.3
+      weight_batch: 0.4
       label: scanvi_label
       batch:
         - dataset
         - sample
-      covariates:
-        - disease
-        - percent_mito
-        - scrublet_score
+      gene_sets:
+        Immune:
+          - CD53
+          - PTPRC
+          - CORO1A
+        Alveolar Mph:
+          - CYP27A1
+          - MARCO
+          - FABP4
+        T reg:
+          - FOXP3
+          - RTKN2
+        Epithelial:
+          - FXYD3
+          - EPCAM
+          - ELF3
+        pre-TB secretory:
+          - SCGB1A1 # from Tata paper
+          - SFTPB
+          - SCGB3A2
+          - RNASE1
+          - SFTA1P
+        AT0:
+          - SFTPB
+          - SCGB3A2
+          - IGFBP2
+          - SERPINF1
+          - TSPAN1
+          - SFTA2
+          - C11orf96
+        EC:
+          - CLDN5
+          - ECSCR
+          - CLEC14A
+        Stroma:
+          - COL1A2
+          - DCN
+          - MFAP4
+        Hematopoietic stem cells:
+          - CD53
+          - PTPRC
+          - CORO1A
+          - CRHBP
+          - SERPINE2
+          - MAP7
       metrics:
         - nmi
         - ari
@@ -358,17 +415,18 @@ DATASETS:
         - uns
       skip_slots:
         - raw
+    
     clustering:
       algorithm: leiden
-      use_gpu: true
+      use_gpu: false
       neighbors:
         use_rep: X_emb
         n_neighbors: 100
         metric: euclidean
       resolutions:
-        - 1.0
+        - 0.5
       hierarchy:
-        2: 0.5
+        2: 0.3
         3: 0.2
       umap_colors:
         - assay
@@ -382,10 +440,15 @@ DATASETS:
         - qc_status
         - lung_condition
         - sex
+    
     label_transfer:
       majority_reference:
         reference_key: ann_finest_level
-        query_key: leiden_1.0_3
+        query_key: leiden_0.5_3
         crosstab_kwargs:
           dropna: true
-      
+    
+    majority_voting:
+      columns:
+        - majority_reference--.*
+
