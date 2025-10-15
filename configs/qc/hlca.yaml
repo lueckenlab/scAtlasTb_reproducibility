@@ -206,7 +206,7 @@ DATASETS:
       preprocessing: filter
       integration: preprocessing
       metrics: integration
-      clustering: metrics
+      clustering: integration
       label_transfer: clustering
       marker_genes: label_transfer
       collect: marker_genes
@@ -219,9 +219,6 @@ defaults:
     remove_by_column:
       qc_status:
         - failed
-
-
-defaults:
 
   preprocessing:
     raw_counts: X
@@ -301,7 +298,7 @@ defaults:
         use_layer_norm: both
         use_batch_norm: none
         gene_likelihood: nb
-        max_epochs: 200
+        max_epochs: 100
         early_stopping: true
       scanvi:
         n_layers: 2
@@ -311,42 +308,42 @@ defaults:
         use_layer_norm: both
         use_batch_norm: none
         gene_likelihood: nb
-        max_epochs: 200
+        max_epochs: 100
         early_stopping: true
 
   clustering:
-      algorithm: leiden
-      use_gpu: true
-      neighbors:
-        use_rep: X_emb
-        n_neighbors: 100
-        metric: euclidean
-      resolutions:
-        - 1.0
-      hierarchy:
-        2: 0.5
-        3: 0.2
-      umap_colors:
-        - assay
-        - dataset
-        - study
-        - ann_level_1
-        - ann_level_2
-        - ann_level_3
-        - original_ann_level_1
-        - original_ann_level_2
-        - original_ann_level_3
-        - ann_finest_level
-        - manual_ann
-        - scanvi_label
-        - majority_reference
-        - qc_status
-        - lung_condition
-        - sex
-        - scrublet_score
-        - n_genes
-        - n_counts
-        - percent_mito
+    algorithm: leiden
+    use_gpu: false
+    neighbors:
+      use_rep: X_emb
+      n_neighbors: 100
+      metric: euclidean
+    resolutions:
+      - 0.5
+    hierarchy:
+      2: 0.2
+      3: 0.5
+    umap_colors:
+      - assay
+      - dataset
+      - study
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - original_ann_level_1
+      - original_ann_level_2
+      - original_ann_level_3
+      - ann_finest_level
+      - manual_ann
+      - scanvi_label
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
 
   metrics:
     unintegrated: layers/normcounts
@@ -358,10 +355,51 @@ defaults:
     batch:
       - dataset
       # - assay
-    covariates:
-      - disease
-      - percent_mito
-      - scrublet_score
+    gene_sets:
+      Immune:
+        - CD53
+        - PTPRC
+        - CORO1A
+      Alveolar Mph:
+        - CYP27A1
+        - MARCO
+        - FABP4
+      T reg:
+        - FOXP3
+        - RTKN2
+      Epithelial:
+        - FXYD3
+        - EPCAM
+        - ELF3
+      pre-TB secretory:
+        - SCGB1A1 # from Tata paper
+        - SFTPB
+        - SCGB3A2
+        - RNASE1
+        - SFTA1P
+      AT0:
+        - SFTPB
+        - SCGB3A2
+        - IGFBP2
+        - SERPINF1
+        - TSPAN1
+        - SFTA2
+        - C11orf96
+      EC:
+        - CLDN5
+        - ECSCR
+        - CLEC14A
+      Stroma:
+        - COL1A2
+        - DCN
+        - MFAP4
+      Hematopoietic stem cells:
+        - CD53
+        - PTPRC
+        - CORO1A
+        - CRHBP
+        - SERPINE2
+        - MAP7
     metrics:
       - nmi
       - ari
@@ -373,8 +411,7 @@ defaults:
       - graph_connectivity
       - isolated_label_f1
       - pcr_comparison
-      # - morans_i
-      # - morans_i_genes
+      - morans_i_genes
       # - pcr
       # - pcr_genes
       - kbet_pg
@@ -382,20 +419,21 @@ defaults:
   marker_genes:
     sample: subject_ID
     groups:
+      - majority_reference
       - manual_ann
-      - leiden_1.0_1
+      - leiden_0.5_2
     marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
     rank_genes_groups:
       reference: rest
       method: wilcoxon
     plot:
-      n_genes: 20
+      n_genes: 10
     layer: layers/normcounts
 
   label_transfer:
     majority_reference:
       reference_key: manual_ann
-      query_key: leiden_1.0_3
+      query_key: leiden_0.5_3
       crosstab_kwargs:
         dropna: true
 
