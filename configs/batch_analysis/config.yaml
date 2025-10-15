@@ -134,9 +134,11 @@ DATASETS:
     input:
       split_data:
         HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
-      merge: split_data
+      preprocessing: split_data
+      merge: preprocessing
       sample_representation: split_data, merge
       batch_analysis: split_data, sample_representation
+    
     split_data:
       key: study
       values:
@@ -154,13 +156,41 @@ DATASETS:
       dask: true
       backed: true
       threads: 50
+    
+    preprocessing:
+      raw_counts: X
+      normalize:
+        target_sum: 10_000
+      highly_variable_genes:
+        n_top_genes: 2000
+      assemble:
+        - highly_variable_genes
+        - pca
+      colors:
+        - assay
+        - dataset
+        - study
+        - ann_level_1
+        - ann_level_2
+        - ann_level_3
+        - ann_finest_level
+        - majority_reference
+        - qc_status
+        - lung_condition
+        - sex
+        - scrublet_score
+        - n_genes
+        - n_counts
+        - percent_mito
+
     merge:
       dask: true
       backed: true
       threads: 50
+    
     sample_representation:
       sample_key: sample,donor_id,tissue_level_2,tissue_level_3
-      raw_counts: raw/X
+      raw_counts: layers/counts
       methods:
         pseudobulk:
       colors:
@@ -176,6 +206,7 @@ DATASETS:
         - tissue_level_2
         - tissue_level_3
         - tissue_sampling_method
+    
     batch_analysis:
       sample: sample,donor_id,tissue_level_2,tissue_level_3
       n_permutations: 1000
@@ -196,6 +227,7 @@ DATASETS:
         - tissue_level_2
         - tissue_level_3
         - tissue_sampling_method
+
 
   batch_correction:
     input:
