@@ -8,8 +8,7 @@ snakemake \
   --configfile \
     .profiles/czbiohub/cluster_config.yaml \
     configs/global.yaml  \
-    configs/feature_selection/global.yaml  \
-    configs/feature_selection/gene_sets.yaml  \
-    configs/feature_selection/luca.yaml \
+    configs/HLCA_gene_sets.yaml  \
+    configs/feature_selection/LuCA/workflow.yaml \
   --snakefile $pipeline/workflow/Snakefile \
     $@

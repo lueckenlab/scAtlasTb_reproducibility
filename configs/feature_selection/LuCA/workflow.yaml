@@ -1,14 +1,20 @@
+output_dir: data/pipeline/feature_selection/LuCA
+images: data/images/feature_selection/LuCA
+
+output_map:
+  preprocessing: data/pipeline/feature_selection/LuCA/preprocessing/dataset~{dataset}/file_id~{file_id}/preprocessed.zarr
+
 DATASETS:
   
   lineage:
     input:
       relabel:
-        All: data/pipeline/load_data/download/LuCA_core.h5ad
+        All: data/pipeline/load_data/harmonize_metadata/LuCA_core.zarr
       split_data: relabel
 
     relabel:
       new_columns:
-        file: configs/feature_selection/luca_annotation_map.tsv
+        file: configs/feature_selection/LuCA/lineage_map.tsv
         order:
           - ann_coarse
           - lineage
@@ -16,10 +22,10 @@ DATASETS:
   per_lineage:
     input:
       preprocessing:
-        Immune: data/pipeline/feature_selection/split_data/dataset~lineage/file_id~relabel:All/key~lineage/value~Immune.zarr
-        # Epithelial: data/pipeline/feature_selection/split_data/dataset~lineage/file_id~relabel:All/key~lineage/value~Epithelial.zarr
-        # Endothelial: data/pipeline/feature_selection/split_data/dataset~lineage/file_id~relabel:All/key~lineage/value~Endothelial.zarr
-        # Stroma: data/pipeline/feature_selection/split_data/dataset~lineage/file_id~relabel:All/key~lineage/value~Stroma.zarr
+        Immune: data/pipeline/feature_selection/LuCA/split_data/dataset~lineage/file_id~relabel:All/key~lineage/value~Immune.zarr
+        # Epithelial: data/pipeline/feature_selection/LuCA/split_data/dataset~lineage/file_id~relabel:All/key~lineage/value~Epithelial.zarr
+        # Endothelial: data/pipeline/feature_selection/LuCA/split_data/dataset~lineage/file_id~relabel:All/key~lineage/value~Endothelial.zarr
+        # Stroma: data/pipeline/feature_selection/LuCA/split_data/dataset~lineage/file_id~relabel:All/key~lineage/value~Stroma.zarr
       integration: preprocessing
       clustering: integration
       label_transfer: clustering
@@ -34,7 +40,7 @@ DATASETS:
   global:
     input:
       preprocessing:
-        All: data/pipeline/feature_selection/relabel/dataset~lineage/file_id~All.zarr
+        All: data/pipeline/feature_selection/LuCA/relabel/dataset~lineage/file_id~All.zarr
       integration: preprocessing
       split_data: integration
       clustering: split_data # ,integration
@@ -56,29 +62,29 @@ DATASETS:
   Immune:
     input:
       metrics:
-        integration=unintegrated--strategy=lineage: "data/pipeline/feature_selection/label_transfer/dataset~per_lineage/\
+        integration=unintegrated--strategy=lineage: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~per_lineage/\
           file_id~clustering:integration:preprocessing:Immune--integration=a1218f3a90.zarr"
-        integration=unintegrated--strategy=global: "data/pipeline/feature_selection/label_transfer/dataset~global/\
+        integration=unintegrated--strategy=global: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~global/\
           file_id~clustering:split_data:integration:preprocessing:All--integration=a1218f3a90--split_data_key=lineage--split_data_value=Immune.zarr"
-        integration=harmony--strategy=lineage: "data/pipeline/feature_selection/label_transfer/dataset~per_lineage/\
+        integration=harmony--strategy=lineage: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~per_lineage/\
           file_id~clustering:integration:preprocessing:Immune--integration=78b6990a8f.zarr"
-        integration=harmony--strategy=global: "data/pipeline/feature_selection/label_transfer/dataset~global/\
+        integration=harmony--strategy=global: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~global/\
           file_id~clustering:split_data:integration:preprocessing:All--integration=78b6990a8f--split_data_key=lineage--split_data_value=Immune.zarr"
-        integration=scvi--strategy=lineage: "data/pipeline/feature_selection/label_transfer/dataset~per_lineage/\
+        integration=scvi--strategy=lineage: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~per_lineage/\
           file_id~clustering:integration:preprocessing:Immune--integration=11f2c125d1.zarr"
-        integration=scvi--strategy=global: "data/pipeline/feature_selection/label_transfer/dataset~global/\
+        integration=scvi--strategy=global: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~global/\
           file_id~clustering:split_data:integration:preprocessing:All--integration=11f2c125d1--split_data_key=lineage--split_data_value=Immune.zarr"
-        integration=62954d6348--strategy=lineage: "data/pipeline/feature_selection/label_transfer/dataset~per_lineage/\
-          file_id~clustering:integration:preprocessing:Immune--integration=62954d6348.zarr"
-        integration=62954d6348--strategy=global: "data/pipeline/feature_selection/label_transfer/dataset~global/\
-          file_id~clustering:split_data:integration:preprocessing:All--integration=62954d6348--split_data_key=lineage--split_data_value=Immune.zarr"
-        integration=drvi--strategy=lineage: "data/pipeline/feature_selection/label_transfer/dataset~per_lineage/\
+        # integration=scanvi--strategy=lineage: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~per_lineage/\
+        #   file_id~clustering:integration:preprocessing:Immune--integration=62954d6348.zarr"
+        # integration=scanvi--strategy=global: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~global/\
+        #   file_id~clustering:split_data:integration:preprocessing:All--integration=62954d6348--split_data_key=lineage--split_data_value=Immune.zarr"
+        integration=drvi--strategy=lineage: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~per_lineage/\
           file_id~clustering:integration:preprocessing:Immune--integration=451bff3e4d.zarr"
-        integration=drvi--strategy=global: "data/pipeline/feature_selection/label_transfer/dataset~global/\
+        integration=drvi--strategy=global: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~global/\
           file_id~clustering:split_data:integration:preprocessing:All--integration=451bff3e4d--split_data_key=lineage--split_data_value=Immune.zarr"
-        integration=scpoli--strategy=lineage: "data/pipeline/feature_selection/label_transfer/dataset~per_lineage/\
+        integration=scpoli--strategy=lineage: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~per_lineage/\
           file_id~clustering:integration:preprocessing:Immune--integration=6abc1ac9cb.zarr"
-        integration=scpoli--strategy=global: "data/pipeline/feature_selection/label_transfer/dataset~global/\
+        integration=scpoli--strategy=global: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~global/\
           file_id~clustering:split_data:integration:preprocessing:All--integration=6abc1ac9cb--split_data_key=lineage--split_data_value=Immune.zarr"
       collect: metrics
       label_transfer: collect
@@ -175,15 +181,15 @@ defaults:
         early_stopping: true
         max_epochs: 50
         use_observed_lib_size: true
-      scanvi:
-        n_latent: 30
-        n_hidden: 128
-        n_layers: 2
-        dispersion: gene-batch
-        dropout_rate: 0.2
-        early_stopping: true
-        max_epochs: 50
-        use_observed_lib_size: true
+      # scanvi:
+      #   n_latent: 30
+      #   n_hidden: 128
+      #   n_layers: 2
+      #   dispersion: gene-batch
+      #   dropout_rate: 0.2
+      #   early_stopping: true
+      #   max_epochs: 50
+      #   use_observed_lib_size: true
       drvi:
         n_latent: 128
         encoder_dims:
@@ -234,13 +240,8 @@ defaults:
     overwrite_file_id: true
     weight_batch: 0.3
     label: ann_fine
-    batch:
-      - dataset
-      # - assay
-    covariates:
-      - disease
-      - percent_mito
-      - scrublet_score
+    batch: sample
+    gene_sets: HLCA_immune
     metrics:
       - nmi
       - ari
