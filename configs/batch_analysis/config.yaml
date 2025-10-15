@@ -236,7 +236,8 @@ DATASETS:
       integration: preprocessing
       clustering: integration
       label_transfer: clustering
-      metrics: label_transfer
+      marker_genes: label_transfer
+      metrics: marker_genes
       collect: metrics
     preprocessing:
       raw_counts: raw/X
@@ -330,6 +331,20 @@ DATASETS:
         - pcr_comparison
         - morans_i_genes
         - kbet_pg
+    
+    marker_genes:
+      sample: donor_id
+      groups:
+        - majority_reference
+        - leiden_0.5_2
+      marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
+      rank_genes_groups:
+        reference: rest
+        method: wilcoxon
+      plot:
+        n_genes: 10
+      layer: layers/normcounts
+    
     collect:
       sep: --
       same_slots:
