@@ -120,7 +120,67 @@ DATASETS:
       dask: true
       backed: true
       threads: 50
-    
+
+
+  HLCA_qc_de:
+    input:
+      preprocessing:
+        qc: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
+      split_data: preprocessing
+      marker_genes: split_data
+
+    preprocessing:
+      raw_counts: X
+      normalize:
+        target_sum: 10_000
+      assemble:
+        - normalize
+
+    split_data:
+      key: manual_ann
+      values:
+        - Arterial_EC
+        - Macrophages
+        - Innate_Lymphoid_Cell_NK
+        - AT2
+        - Basal
+        - Venous_EC
+        - T_cell_lineage
+        - Fibroblast_lineage
+        - Doublets
+        - AT1
+        - Secretory
+        - Ciliated
+        - Plasma_cells
+        - Smooth_muscle
+        - Monocytes
+        - SMG_Serous
+        - Capillary_EC
+        - Lymphatic_EC
+        - Neuroendocrine
+        - Dendritic_cells
+        - B_cells
+        - Mast_cells
+        - SMG_Mucous
+        - SMG_Duct
+        - Mesothelium
+        - Ionocytes
+        - Deuterosomal
+        - Brush_Cell_Tuft
+        - Poor_QC
+        - RBC_doublets
+
+    marker_genes:
+      layer: X
+      sample: subject_ID
+      groups: qc_status
+      marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
+      rank_genes_groups:
+        reference: rest
+        method: wilcoxon
+      plot:
+        n_genes: 10
+
 
   HCA_integration_all:
     input:
