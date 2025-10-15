@@ -187,11 +187,16 @@ DATASETS:
       preprocessing:
         all: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
       integration: preprocessing
-      metrics: integration
-      clustering: metrics
+      filter: integration
+      metrics: filter
+      clustering: filter
       label_transfer: clustering
       marker_genes: label_transfer
       collect: marker_genes
+    
+    clustering:
+      recompute_neighbors: true
+      recompute_umap: true
 
 
   HCA_integration_filtered:
@@ -205,12 +210,15 @@ DATASETS:
       label_transfer: clustering
       marker_genes: label_transfer
       collect: marker_genes
-    
-    filter:
-      subset: true
-      remove_by_column:
-        qc_status:
-          - failed
+
+
+defaults:
+
+  filter:
+    subset: true
+    remove_by_column:
+      qc_status:
+        - failed
 
 
 defaults:
