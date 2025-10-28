@@ -10,6 +10,6 @@ snakemake \
     configs/global.yaml \
     configs/HLCA_gene_sets.yaml \
     configs/qc/global.yaml \
-    configs/qc/hlca.yaml \
+    configs/qc/workflow.yaml \
   --snakefile $pipeline/workflow/Snakefile \
     $@

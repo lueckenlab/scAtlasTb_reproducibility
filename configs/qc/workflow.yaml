@@ -1,10 +1,10 @@
 DATASETS:
 
-  HLCA_split_study:
+  split_study:
     input:
       split_data:
-        # HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
-        HLCA: data/input/HLCA_unfiltered.h5ad
+        HLCA: data/output/qc/HLCA_core.zarr
+        # HLCA: data/input/HLCA_unfiltered.h5ad
     
     split_data:
       key: study
@@ -24,7 +24,8 @@ DATASETS:
       backed: true
       threads: 50
       slots:
-        X: layers/counts # raw/X
+        X: raw/X
+        # X: layers/counts
         obs: obs
         var: var
         obsm: obsm
@@ -34,17 +35,17 @@ DATASETS:
   HLCA_qc:
     input:
       doublets:
-        Banovich_Kropski_2020: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Banovich_Kropski_2020.zarr
-        Barbry_Leroy_2020: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Barbry_Leroy_2020.zarr
-        Jain_Misharin_2021: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Jain_Misharin_2021.zarr
-        Krasnow_2020: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Krasnow_2020.zarr
-        Lafyatis_Rojas_2019: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Lafyatis_Rojas_2019.zarr
-        Meyer_2019: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Meyer_2019.zarr
-        Misharin_2021: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Misharin_2021.zarr
-        Misharin_Budinger_2018: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Misharin_Budinger_2018.zarr
-        Nawijn_2021: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Nawijn_2021.zarr
-        Seibold_2020: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Seibold_2020.zarr
-        Teichmann_Meyer_2019: data/pipeline/qc/split_data/dataset~HLCA_split_study/file_id~HLCA/key~study/value~Teichmann_Meyer_2019.zarr
+        Banovich_Kropski_2020: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Banovich_Kropski_2020.zarr
+        Barbry_Leroy_2020: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Barbry_Leroy_2020.zarr
+        Jain_Misharin_2021: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Jain_Misharin_2021.zarr
+        Krasnow_2020: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Krasnow_2020.zarr
+        Lafyatis_Rojas_2019: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Lafyatis_Rojas_2019.zarr
+        Meyer_2019: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Meyer_2019.zarr
+        Misharin_2021: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Misharin_2021.zarr
+        Misharin_Budinger_2018: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Misharin_Budinger_2018.zarr
+        Nawijn_2021: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Nawijn_2021.zarr
+        Seibold_2020: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Seibold_2020.zarr
+        Teichmann_Meyer_2019: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Teichmann_Meyer_2019.zarr
       split_data: doublets
       qc: split_data
       merge: qc
@@ -57,7 +58,7 @@ DATASETS:
     split_data:
       dask: true
       backed: true
-      key: original_ann_level_1 # ann_level_1
+      key: ann_level_1
       values:
         - Immune
         - Epithelial
@@ -77,11 +78,7 @@ DATASETS:
         - ann_level_1
         - ann_level_2
         - ann_level_3
-        - original_ann_level_1
-        - original_ann_level_2
-        - original_ann_level_3
         - ann_finest_level
-        - manual_ann
         - scanvi_label
         - assay
         - dataset
@@ -97,7 +94,6 @@ DATASETS:
         - smoking_status
         - subject_type
         - tissue_dissociation_protocol
-        - doubletdetection_score
         - scrublet_score
       scautoqc_metrics_params: configs/qc/scautoqc_params.tsv
       scautoqc_gaussian_kwargs:
@@ -122,103 +118,65 @@ DATASETS:
       threads: 50
 
 
-  HLCA_qc_de:
-    input:
-      preprocessing:
-        qc: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
-      split_data: preprocessing
-      marker_genes: split_data
-
-    preprocessing:
-      raw_counts: X
-      normalize:
-        target_sum: 10_000
-      assemble:
-        - normalize
-
-    split_data:
-      key: manual_ann
-      values:
-        - Arterial_EC
-        - Macrophages
-        - Innate_Lymphoid_Cell_NK
-        - AT2
-        - Basal
-        - Venous_EC
-        - T_cell_lineage
-        - Fibroblast_lineage
-        - Doublets
-        - AT1
-        - Secretory
-        - Ciliated
-        - Plasma_cells
-        - Smooth_muscle
-        - Monocytes
-        - SMG_Serous
-        - Capillary_EC
-        - Lymphatic_EC
-        - Neuroendocrine
-        - Dendritic_cells
-        - B_cells
-        - Mast_cells
-        - SMG_Mucous
-        - SMG_Duct
-        - Mesothelium
-        - Ionocytes
-        - Deuterosomal
-        - Brush_Cell_Tuft
-        - Poor_QC
-        - RBC_doublets
-
-    marker_genes:
-      layer: X
-      sample: subject_ID
-      groups: qc_status
-      marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
-      rank_genes_groups:
-        reference: rest
-        method: wilcoxon
-      plot:
-        n_genes: 10
-
-
-  HCA_integration_all:
-    input:
-      preprocessing:
-        all: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
-      integration: preprocessing
-      filter: integration
-      metrics: filter
-      clustering: filter
-      label_transfer: clustering
-      marker_genes: label_transfer
-      collect: marker_genes
-    
-    clustering:
-      recompute_neighbors: true
-      recompute_umap: true
-
-
-  HCA_integration_filtered:
+  HLCA_highQC:
     input:
       filter:
-        qc: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
+        highQC: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
       preprocessing: filter
       integration: preprocessing
       metrics: integration
-      clustering: integration
-      label_transfer: clustering
-      marker_genes: label_transfer
-      collect: marker_genes
+      # clustering: integration
+      # label_transfer: clustering
+      # marker_genes: label_transfer
+      # collect: marker_genes
+    filter:
+      remove_by_column:
+        qc_status:
+          - failed
+
+
+  HLCA_map_to_highQC:
+    input:
+      filter:
+        lowQC: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
+      reference_mapping: filter
+      merge:
+        highQC: data/output/qc/HLCA_core.zarr
+        lowQC: data/pipeline/qc/reference_mapping/dataset~HLCA_map_to_highQC/file_id~filter:lowQC.zarr
+
+    filter:
+      remove_by_column:
+        qc_status:
+          - passed
+    
+    reference_mapping:
+      scarches:
+        model: "data/pipeline/qc/integration/run_method/dataset~HLCA_highQC/file_id~preprocessing:filter:highQC\
+          /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~37055b39e0--label~scanvi_label/model"
+        layer: layers/counts
+        model_params:
+          batch_key: dataset
+
+    merge:
+      slots:
+        X: X
+        layers: layers
+        obs: obs
+        var: var
+        obsm: obsm
+      dask: true 
+      backed: true
+      threads: 20
+
+  benchmark:
+    input:
+      metrics:
+        HLCA_map_to_highQC: data/pipeline/qc/merge/dataset~HLCA_map_to_highQC.zarr
+        HLCA: data/output/qc/HLCA_core.zarr
+      collect: metrics
 
 
 defaults:
-
-  filter:
-    subset: true
-    remove_by_column:
-      qc_status:
-        - failed
 
   preprocessing:
     raw_counts: X
@@ -238,11 +196,7 @@ defaults:
       - ann_level_1
       - ann_level_2
       - ann_level_3
-      - original_ann_level_1
-      - original_ann_level_2
-      - original_ann_level_3
       - ann_finest_level
-      - manual_ann
       - scanvi_label
       - majority_reference
       - qc_status
@@ -261,7 +215,7 @@ defaults:
     var_mask:
       - highly_variable
     neighbors:
-      n_neighbors: 100
+      n_neighbors: 30
     output_types:
       - embed
     umap_colors:
@@ -271,11 +225,7 @@ defaults:
       - ann_level_1
       - ann_level_2
       - ann_level_3
-      - original_ann_level_1
-      - original_ann_level_2
-      - original_ann_level_3
       - ann_finest_level
-      - manual_ann
       - scanvi_label
       - majority_reference
       - qc_status
@@ -286,20 +236,20 @@ defaults:
       - n_counts
       - percent_mito
     methods:
-      unintegrated:
-      harmony_pytorch:
-        n_comps: 50
-        scale: false
-      scvi:
-        n_layers: 2
-        n_latent: 30
-        encode_covariates: True
-        deeply_inject_covariates: False
-        use_layer_norm: both
-        use_batch_norm: none
-        gene_likelihood: nb
-        max_epochs: 100
-        early_stopping: true
+      # unintegrated:
+      # harmony_pytorch:
+      #   n_comps: 50
+      #   scale: false
+      # scvi:
+      #   n_layers: 2
+      #   n_latent: 30
+      #   encode_covariates: True
+      #   deeply_inject_covariates: False
+      #   use_layer_norm: both
+      #   use_batch_norm: none
+      #   gene_likelihood: nb
+      #   max_epochs: 100
+      #   early_stopping: true
       scanvi:
         n_layers: 2
         n_latent: 30
@@ -316,7 +266,7 @@ defaults:
     use_gpu: false
     neighbors:
       use_rep: X_emb
-      n_neighbors: 100
+      n_neighbors: 30
       metric: euclidean
     resolutions:
       - 0.5
@@ -330,11 +280,7 @@ defaults:
       - ann_level_1
       - ann_level_2
       - ann_level_3
-      - original_ann_level_1
-      - original_ann_level_2
-      - original_ann_level_3
       - ann_finest_level
-      - manual_ann
       - scanvi_label
       - majority_reference
       - qc_status
@@ -420,7 +366,7 @@ defaults:
     sample: subject_ID
     groups:
       - majority_reference
-      - manual_ann
+      - ann_finest_level
       - leiden_0.5_2
     marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
     rank_genes_groups:
@@ -432,7 +378,7 @@ defaults:
 
   label_transfer:
     majority_reference:
-      reference_key: manual_ann
+      reference_key: ann_finest_level
       query_key: leiden_0.5_3
       crosstab_kwargs:
         dropna: true

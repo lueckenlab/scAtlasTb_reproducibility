@@ -1,5 +1,2 @@
 output_dir: data/pipeline/qc
 images: data/images/qc
-
-output_map:
-  preprocessing: data/pipeline/qc/preprocessing/dataset~{dataset}/file_id~{file_id}/preprocessed.zarr
