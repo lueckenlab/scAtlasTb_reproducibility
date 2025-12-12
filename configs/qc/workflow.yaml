@@ -25,7 +25,7 @@ DATASETS:
       threads: 50
       slots:
         X: raw/X
-        # X: layers/counts
+        layers: layers
         obs: obs
         var: var
         obsm: obsm
@@ -67,6 +67,7 @@ DATASETS:
         - Proliferating_cells
       slots:
         X: X
+        layers: layers
         obs: obs
         var: var
         obsm: obsm
@@ -111,6 +112,7 @@ DATASETS:
       merge_strategy: inner
       slots:
           X: X
+          layers: layers
           obs: obs
           var: var
       dask: true
@@ -125,10 +127,6 @@ DATASETS:
       preprocessing: filter
       integration: preprocessing
       metrics: integration
-      # clustering: integration
-      # label_transfer: clustering
-      # marker_genes: label_transfer
-      # collect: marker_genes
     filter:
       remove_by_column:
         qc_status:
@@ -141,8 +139,12 @@ DATASETS:
         lowQC: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
       reference_mapping: filter
       merge:
-        highQC: data/output/qc/HLCA_core.zarr
+        # low QC must go first, otherwise gets overwritten by high QC data
         lowQC: data/pipeline/qc/reference_mapping/dataset~HLCA_map_to_highQC/file_id~filter:lowQC.zarr
+        # must match the object of the model that is being used
+        highQC: "data/pipeline/qc/integration/dataset~HLCA_highQC/file_id~preprocessing:filter:highQC\
+          /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~37055b39e0--label~scanvi_label--output_type~embed.zarr"
+      relabel: merge
 
     filter:
       remove_by_column:
@@ -153,9 +155,11 @@ DATASETS:
       scarches:
         model: "data/pipeline/qc/integration/run_method/dataset~HLCA_highQC/file_id~preprocessing:filter:highQC\
           /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~37055b39e0--label~scanvi_label/model"
-        layer: layers/counts
+        layer: X
         model_params:
           batch_key: dataset
+        train_params:
+          max_epochs: 50
 
     merge:
       slots:
@@ -167,19 +171,72 @@ DATASETS:
       dask: true 
       backed: true
       threads: 20
+    
+    relabel:
+      selective_update:
+        base_column: ann_finest_level
+        new_column: ann_finest_level
+        update_map:
+          file_id:
+            'lowQC': # remove any annotations form low QC dataset
 
   benchmark:
     input:
-      metrics:
-        HLCA_map_to_highQC: data/pipeline/qc/merge/dataset~HLCA_map_to_highQC.zarr
+      preprocessing:
+        HLCA_map_to_highQC: data/pipeline/qc/relabel/dataset~HLCA_map_to_highQC/file_id~merge:HLCA_map_to_highQC.zarr
         HLCA: data/output/qc/HLCA_core.zarr
+      clustering: preprocessing
+      label_transfer: clustering
+      metrics: label_transfer
       collect: metrics
+      marker_genes: collect
+
+    clustering:
+      recompute_umap: true
+      recompute_neighbors: true
+
+    label_transfer:
+      majority_reference:
+        reference_key: ann_finest_level
+        query_key: leiden_0.5_3
+        crosstab_kwargs:
+          dropna: true
+
+    collect:
+      sep: --
+      same_slots:
+        - X
+        - var
+        - layers
+      merge_slots:
+        - obs
+        - obsm
+        - obsp
+        - uns
+      skip_slots:
+        - raw
+
+    marker_genes:
+      sample: sample
+      layer: layers/normcounts
+      groups:
+        - ann_finest_level--metrics:label_transfer:clustering:preprocessing:HLCA
+        - majority_reference--metrics:label_transfer:clustering:preprocessing:HLCA
+        - majority_reference--metrics:label_transfer:clustering:preprocessing:HLCA_map_to_highQC
+        - leiden_0.5_2--metrics:label_transfer:clustering:preprocessing:HLCA
+        - leiden_0.5_2--metrics:label_transfer:clustering:preprocessing:HLCA_map_to_highQC
+      marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
+      rank_genes_groups:
+        reference: rest
+        method: wilcoxon
+      plot:
+        n_genes: 5
 
 
 defaults:
 
   preprocessing:
-    raw_counts: X
+    raw_counts: layers/counts
     normalize:
       target_sum: 10_000
     highly_variable_genes:
@@ -240,16 +297,16 @@ defaults:
       # harmony_pytorch:
       #   n_comps: 50
       #   scale: false
-      # scvi:
-      #   n_layers: 2
-      #   n_latent: 30
-      #   encode_covariates: True
-      #   deeply_inject_covariates: False
-      #   use_layer_norm: both
-      #   use_batch_norm: none
-      #   gene_likelihood: nb
-      #   max_epochs: 100
-      #   early_stopping: true
+      scvi:
+        n_layers: 2
+        n_latent: 30
+        encode_covariates: True
+        deeply_inject_covariates: False
+        use_layer_norm: both
+        use_batch_norm: none
+        gene_likelihood: nb
+        max_epochs: 100
+        early_stopping: true
       scanvi:
         n_layers: 2
         n_latent: 30
@@ -272,8 +329,9 @@ defaults:
       - 0.5
     hierarchy:
       2: 0.2
-      3: 0.5
+      3: 0.2
     umap_colors:
+      - file_id
       - assay
       - dataset
       - study
@@ -297,6 +355,7 @@ defaults:
     var_mask: highly_variable
     # overwrite_file_id: true
     weight_batch: 0.4
+    use_scaled: false
     label: scanvi_label
     batch:
       - dataset
@@ -361,38 +420,3 @@ defaults:
       # - pcr
       # - pcr_genes
       - kbet_pg
-  
-  marker_genes:
-    sample: subject_ID
-    groups:
-      - majority_reference
-      - ann_finest_level
-      - leiden_0.5_2
-    marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
-    rank_genes_groups:
-      reference: rest
-      method: wilcoxon
-    plot:
-      n_genes: 10
-    layer: layers/normcounts
-
-  label_transfer:
-    majority_reference:
-      reference_key: ann_finest_level
-      query_key: leiden_0.5_3
-      crosstab_kwargs:
-        dropna: true
-
-  collect:
-    sep: --
-    same_slots:
-      - X
-      - var
-      - layers
-    merge_slots:
-      - obs
-      - obsm
-      - obsp
-      - uns
-    skip_slots:
-      - raw
