@@ -1,51 +1,43 @@
 DATASETS:
 
-  split_study:
+  prepare_data:
     input:
-      split_data:
-        HLCA: data/output/qc/HLCA_core.zarr
-        # HLCA: data/input/HLCA_unfiltered.h5ad
+      relabel:
+        HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
+      split_data: relabel
     
-    split_data:
-      key: study
-      values:
-        - Banovich_Kropski_2020
-        - Barbry_Leroy_2020
-        - Jain_Misharin_2021
-        - Krasnow_2020
-        - Lafyatis_Rojas_2019
-        - Meyer_2019
-        - Misharin_2021
-        - Misharin_Budinger_2018
-        - Nawijn_2021
-        - Seibold_2020
-        - Teichmann_Meyer_2019
-      dask: true
-      backed: true
-      threads: 50
-      slots:
-        X: raw/X
-        layers: layers
-        obs: obs
-        var: var
-        obsm: obsm
-        obsp: obsp
-
+    relabel:
+      rename_obsm_keys:
+        X_scanvi_emb: X_emb
+      new_columns:
+        file: data/input/HLCA_unfiltered_anno.tsv
+        index_col: index
+        order:
+          - index
+          - "3'_or_5'"
+          - cell_ranger_version
+          - cell_viability_%
+          - enrichment
+          - ensembl_release_reference_genome
+          - single_cell_platform
+          - anatomical_region_coarse
+          - anatomical_region_highest_res
+          - Processing_site    
 
   HLCA_qc:
     input:
       doublets:
-        Banovich_Kropski_2020: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Banovich_Kropski_2020.zarr
-        Barbry_Leroy_2020: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Barbry_Leroy_2020.zarr
-        Jain_Misharin_2021: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Jain_Misharin_2021.zarr
-        Krasnow_2020: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Krasnow_2020.zarr
-        Lafyatis_Rojas_2019: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Lafyatis_Rojas_2019.zarr
-        Meyer_2019: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Meyer_2019.zarr
-        Misharin_2021: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Misharin_2021.zarr
-        Misharin_Budinger_2018: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Misharin_Budinger_2018.zarr
-        Nawijn_2021: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Nawijn_2021.zarr
-        Seibold_2020: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Seibold_2020.zarr
-        Teichmann_Meyer_2019: data/pipeline/qc/split_data/dataset~split_study/file_id~HLCA/key~study/value~Teichmann_Meyer_2019.zarr
+        Banovich_Kropski_2020: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Banovich_Kropski_2020.zarr
+        Barbry_Leroy_2020: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Barbry_Leroy_2020.zarr
+        Jain_Misharin_2021: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Jain_Misharin_2021.zarr
+        Krasnow_2020: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Krasnow_2020.zarr
+        Lafyatis_Rojas_2019: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Lafyatis_Rojas_2019.zarr
+        Meyer_2019: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Meyer_2019.zarr
+        Misharin_2021: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Misharin_2021.zarr
+        Misharin_Budinger_2018: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Misharin_Budinger_2018.zarr
+        Nawijn_2021: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Nawijn_2021.zarr
+        Seibold_2020: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Seibold_2020.zarr
+        Teichmann_Meyer_2019: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Teichmann_Meyer_2019.zarr
       split_data: doublets
       qc: split_data
       merge: qc
@@ -170,7 +162,7 @@ DATASETS:
     input:
       preprocessing:
         HLCA_map_to_highQC: data/pipeline/qc/relabel/dataset~HLCA_map_to_highQC/file_id~merge:HLCA_map_to_highQC.zarr
-        HLCA: data/output/qc/HLCA_core.zarr
+        HLCA: data/pipeline/qc/relabel/dataset~prepare_data/file_id~HLCA.zarr
       clustering: preprocessing
       label_transfer: clustering
       metrics: label_transfer
