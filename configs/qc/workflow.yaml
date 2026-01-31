@@ -60,7 +60,7 @@ DATASETS:
         - Proliferating_cells
     
     qc:
-      counts: X
+      counts: raw/X
       hue:
         - ann_level_1
         - ann_level_2
@@ -89,9 +89,6 @@ DATASETS:
         - n_counts
         - n_genes
         - percent_mito
-        - percent_ribo
-        - percent_hb
-        - scrublet_score
       # thresholds_file: configs/hlca/qc_thresholds.tsv
 
     merge:
@@ -110,9 +107,9 @@ DATASETS:
       metrics: integration
     
     filter:
-      remove_by_column:
+      keep_by_column:
         qc_status:
-          - failed
+          - passed
 
 
   HLCA_map_to_highQC:
@@ -129,9 +126,9 @@ DATASETS:
       relabel: merge
 
     filter:
-      remove_by_column:
+      keep_by_column:
         qc_status:
-          - passed
+          - failed
     
     reference_mapping:
       scarches:
@@ -142,6 +139,19 @@ DATASETS:
           batch_key: dataset
         train_params:
           max_epochs: 50
+      umap_colors:
+        - file_id
+        - ann_finest_level
+        - assay
+        - dataset
+        - study
+        - disease
+        - lung_condition
+        - percent_mito
+        - n_counts
+        - n_genes
+        - scrublet_score
+        - qc_status
 
     merge:
       dask: true 
