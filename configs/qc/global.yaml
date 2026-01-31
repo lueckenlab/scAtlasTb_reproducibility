@@ -1,2 +1,213 @@
 output_dir: data/pipeline/qc
 images: data/images/qc
+
+defaults:
+
+  split_data:
+      key: study
+      values:
+        - Banovich_Kropski_2020
+        - Barbry_Leroy_2020
+        - Jain_Misharin_2021
+        - Krasnow_2020
+        - Lafyatis_Rojas_2019
+        - Meyer_2019
+        - Misharin_2021
+        - Misharin_Budinger_2018
+        - Nawijn_2021
+        - Seibold_2020
+        - Teichmann_Meyer_2019
+      dask: true
+      backed: true
+      threads: 20
+
+  doublets:
+    counts: raw/X
+    batch: sample
+    chunk_size: 20000
+
+  preprocessing:
+    raw_counts: raw/X
+    normalize:
+      target_sum: 10_000
+    highly_variable_genes:
+      n_top_genes: 2000
+      batch_key: dataset
+      dask: false
+    assemble:
+      - normalize
+      - highly_variable_genes
+    colors:
+      - assay
+      - dataset
+      - study
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - ann_finest_level
+      - scanvi_label
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
+  
+  integration:
+    batch: dataset
+    label: scanvi_label
+    raw_counts: layers/counts
+    norm_counts: layers/normcounts
+    var_mask:
+      - highly_variable
+    neighbors:
+      n_neighbors: 30
+    output_types:
+      - embed
+    umap_colors:
+      - assay
+      - dataset
+      - study
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - ann_finest_level
+      - scanvi_label
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
+    methods:
+      # unintegrated:
+      # harmony_pytorch:
+      #   n_comps: 50
+      #   scale: false
+      scvi:
+        n_layers: 2
+        n_latent: 30
+        encode_covariates: True
+        deeply_inject_covariates: False
+        use_layer_norm: both
+        use_batch_norm: none
+        gene_likelihood: nb
+        max_epochs: 100
+        early_stopping: true
+      scanvi:
+        n_layers: 2
+        n_latent: 30
+        encode_covariates: True
+        deeply_inject_covariates: False
+        use_layer_norm: both
+        use_batch_norm: none
+        gene_likelihood: nb
+        max_epochs: 100
+        early_stopping: true
+
+  clustering:
+    algorithm: leiden
+    use_gpu: false
+    neighbors:
+      use_rep: X_emb
+      n_neighbors: 30
+      metric: euclidean
+    resolutions:
+      - 0.5
+    hierarchy:
+      2: 0.2
+      3: 0.2
+    umap_colors:
+      - file_id
+      - assay
+      - dataset
+      - study
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - ann_finest_level
+      - scanvi_label
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
+
+  metrics:
+    raw_counts: layers/counts
+    unintegrated: layers/normcounts
+    var_mask: highly_variable
+    # overwrite_file_id: true
+    weight_batch: 0.4
+    use_scaled: false
+    label: ann_finest_level
+    batch:
+      - dataset
+      # - assay
+    gene_sets:
+      Immune:
+        - CD53
+        - PTPRC
+        - CORO1A
+      Alveolar Mph:
+        - CYP27A1
+        - MARCO
+        - FABP4
+      T reg:
+        - FOXP3
+        - RTKN2
+      Epithelial:
+        - FXYD3
+        - EPCAM
+        - ELF3
+      pre-TB secretory:
+        - SCGB1A1 # from Tata paper
+        - SFTPB
+        - SCGB3A2
+        - RNASE1
+        - SFTA1P
+      AT0:
+        - SFTPB
+        - SCGB3A2
+        - IGFBP2
+        - SERPINF1
+        - TSPAN1
+        - SFTA2
+        - C11orf96
+      EC:
+        - CLDN5
+        - ECSCR
+        - CLEC14A
+      Stroma:
+        - COL1A2
+        - DCN
+        - MFAP4
+      Hematopoietic stem cells:
+        - CD53
+        - PTPRC
+        - CORO1A
+        - CRHBP
+        - SERPINE2
+        - MAP7
+    metrics:
+      - nmi
+      - ari
+      # - asw_label
+      # - asw_batch
+      - cell_cycle
+      - clisi
+      - ilisi
+      - graph_connectivity
+      - isolated_label_f1
+      - pcr_comparison
+      - morans_i_genes
+      # - pcr
+      # - pcr_genes
+      - kbet_pg
