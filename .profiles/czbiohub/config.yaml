@@ -13,14 +13,13 @@ default-resources:
   - partition=preempted
   - gpu=0
   - mem_mb=32000
-  - disk_mb=20000
-  - time="1-00:00:00"
+  - time="0-10:00:00"
 restart-times: 2
 max-jobs-per-second: 10
 max-status-checks-per-second: 1
 local-cores: 1
-latency-wait: 120
-jobs: 50
+latency-wait: 200
+jobs: 20
 keep-going: True
 rerun-incomplete: True
 printshellcmds: True
@@ -35,33 +34,17 @@ rerun-triggers:
   - code
 #  - software-env
 show-failed-logs: True
-#shadow-prefix: /hpc/projects/data_lg/michaela.mueller/scratch
 shadow-prefix: /tmp/michaela.mueller
-configfile: configs/optional/comp_czbiohub.yaml
 # groups:
- # - doublets_scrublet=doublets_scrublet
- #- doublets_doubletdetection=doublets_doubletdetection
+  # - batch_analysis_determine_covariates=batch_analysis
+  # - batch_analysis_plot=batch_analysis
   # - metrics_prepare=metrics_prepare
+  # - metrics_score_genes=metrics_score_genes
   # - metrics_cluster=metrics_cluster
-  # - metrics_cluster_collect=metrics_cluster
   # - metrics_run=metrics
-  # - metrics_merge_metrics=merge_metrics
-  # - metrics_merge_metrics_per_batch=merge_metrics
-  # - metrics_merge_metrics_per_dataset=merge_metrics
-  # - metrics_merge_metrics_per_label=merge_metrics
-  # - metrics_merge_metrics_per_file=merge_metrics
-  # - metrics_funkyheatmap=plot_metrics
-  # - metrics_funkyheatmap_per_batch=plot_metrics
-  # - metrics_funkyheatmap_per_dataset=plot_metrics
-  # - metrics_funkyheatmap_per_label=plot_metrics
-  # - metrics_barplot=plot_metrics
-  # - metrics_barplot_per_dataset=plot_metrics
-  # - metrics_barplot_per_file=plot_metrics
 # group-components:
-  # - doublets_scrublet=3
-  # - doublets_doubletdetection=3
-  # - metrics_prepare=5
-  # - metrics_cluster=5
-  # - metrics=10
-  # - merge_metrics=10
-  # - plot_metrics=20
+  # - batch_analysis=3
+  # - metrics_prepare=2
+  # - score_genes=2
+  # - metrics_cluster=2
+  # - metrics=2
