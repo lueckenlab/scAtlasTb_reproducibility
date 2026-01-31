@@ -1,0 +1,187 @@
+DATASETS:
+
+  HLCA_extended_qc:
+    input:
+      relabel: 
+        extended: data/pipeline/load_data/download/HLCAv1_extended.h5ad
+      split_data: relabel
+      doublets: split_data
+      clustering: doublets
+      celltype_prediction: clustering
+      qc: celltype_prediction
+      merge: qc
+
+    relabel:
+      rename_obsm_keys:
+        X_scanvi_emb: X_emb
+      selective_update:
+        base_column: ann_finest_level
+        new_column: ann_finest_level
+        update_map:
+          ann_finest_level:
+            'Unknown': 
+
+    filter:
+      dask: true
+      backed: true
+      keep_by_column:
+        core_or_extension:
+          - extension
+
+    split_data:
+      key: study
+      values:
+        - Kaminski_2020
+        - Meyer_2021
+        - Meyer_Nikolic_2022
+        - Regev_2021
+        - Thienpont_2018
+        - Budinger_2020
+        - Sheppard_2020
+        - Wunderink_2021
+        - Lambrechts_2021
+        - Zhang_2021
+        - Duong_lungMAP_unpubl
+        - Janssen_2020
+        - Sun_2020
+        - Gomperts_2021
+        - Eils_2020
+        - Schiller_2020
+        - Shalek_2018
+        - Schiller_2021
+        - Peer_Massague_2020
+        - Lafyatis_2019
+        - Tata_unpubl
+        - Xu_2020
+        - Sims_2019
+        - Schultze_unpubl
+    
+    clustering:
+      algorithm: leiden
+      recompute_neighbors: true
+      recompute_umap: true
+      neighbors:
+        use_rep: X_emb
+      resolutions: 0.5
+      hierarchy: 3
+
+    celltype_prediction:
+      reference_label: original_ann_nonharmonized
+      counts: raw/X
+      is_normalized: false
+      celltypist:
+        params:
+          majority_voting: true
+          over_clustering: leiden_0.5_3
+        models:
+          - Human_Lung_Atlas
+
+    qc:
+      counts: raw/X  
+      hue:
+        - original_ann_nonharmonized
+        - original_ann_level_1
+        - original_ann_level_2
+        - assay
+        - donor_id
+        - fresh_or_frozen
+        - sex
+        - lung_condition
+        - sequencing_platform
+        - smoking_status
+        - subject_type
+        - tissue_dissociation_protocol
+        - tissue_level_2
+        - scrublet_score
+      scautoqc_metrics:
+        - n_counts
+        - n_genes
+        - percent_mito
+
+
+  map_extended:
+    input:      
+      reference_mapping: data/pipeline/qc/merge/dataset~HLCA_extended_qc.zarr
+      merge:
+        extended: data/pipeline/qc/relabel/dataset~HLCA_extended_qc/file_id~extended.zarr
+        highQC: data/pipeline/qc/relabel/dataset~HLCA_map_to_highQC/file_id~merge:HLCA_map_to_highQC.zarr
+      clustering: merge
+      label_transfer: clustering
+
+    filter:
+      dask: true
+      keep_by_column:
+        core_or_extension:
+          - extension
+
+    reference_mapping:
+      scarches:
+        model: "data/pipeline/qc/integration/run_method/dataset~HLCA_highQC/file_id~preprocessing:filter:highQC\
+          /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~37055b39e0--label~scanvi_label/model"
+        layer: raw/X
+        model_params:
+          batch_key: dataset
+        train_params:
+          max_epochs: 50
+      umap_colors:
+        - core_or_extension
+        - file_id
+        - ann_finest_level
+        - assay
+        - dataset
+        - study
+        - disease
+        - lung_condition
+        - percent_mito
+        - n_counts
+        - n_genes
+        - scrublet_score
+        - qc_status
+
+    merge:
+      slots:
+        X: X
+        layers: layers
+        obs: obs
+        var: var
+        obsm: obsm
+      dask: true 
+      backed: true
+      threads: 20
+    
+    clustering:
+      algorithm: leiden
+      use_gpu: false
+      recompute_neighbors: true
+      recompute_umap: true
+      neighbors:
+        use_rep: X_emb
+        n_neighbors: 50
+        metric: euclidean # cosine
+      resolutions: 0.5
+      hierarchy:
+        2: 0.3
+        3: 0.2
+      umap_colors:
+        - assay
+        - dataset
+        - study
+        - leiden_3
+        - leiden_4
+        - ann_finest_level
+        - scanvi_label
+        - majority_reference
+        - qc_status
+        - lung_condition
+        - sex
+        - scrublet_score
+        - n_genes
+        - n_counts
+        - percent_mito
+
+    label_transfer:
+      majority_reference:
+        reference_key: ann_finest_level
+        query_key: leiden_0.5_3
+        crosstab_kwargs:
+          dropna: true
