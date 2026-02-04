@@ -2,6 +2,10 @@ output_dir: data/pipeline/qc
 images: data/images/qc
 
 defaults:
+  merge:
+    dask: true 
+    backed: true
+    threads: 20
 
   split_data:
       key: study
@@ -139,6 +143,13 @@ defaults:
       - n_genes
       - n_counts
       - percent_mito
+
+  label_transfer:
+    majority_reference:
+      reference_key: ann_finest_level
+      query_key: leiden_0.5_3
+      crosstab_kwargs:
+        dropna: true
 
   metrics:
     raw_counts: layers/counts

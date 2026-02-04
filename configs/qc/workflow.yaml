@@ -111,7 +111,7 @@ DATASETS:
       reference_mapping: filter
       merge:
         # low QC must go first, otherwise gets overwritten by high QC data
-        lowQC: data/pipeline/qc/reference_mapping/dataset~HLCA_map_to_highQC/file_id~filter:lowQC.zarr
+        lowQC: reference_mapping
         # must match the object of the model that is being used
         highQC: "data/pipeline/qc/integration/dataset~HLCA_highQC/file_id~preprocessing:filter:highQC\
           /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~37055b39e0--label~scanvi_label--output_type~embed.zarr"
@@ -144,11 +144,6 @@ DATASETS:
         - n_genes
         - scrublet_score
         - qc_status
-
-    merge:
-      dask: true 
-      backed: true
-      threads: 20
     
     relabel:
       selective_update:
