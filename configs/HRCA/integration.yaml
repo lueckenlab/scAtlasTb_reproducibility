@@ -1,0 +1,140 @@
+output_dir: data/pipeline/HRCA
+images: data/images/HRCA
+
+DATASETS:
+  
+  PREPARE_DATA:
+    input:
+      relabel:
+        # scRNA: data/pipeline/load_data/download/Retina_scRNA.h5ad
+        snRNA: data/pipeline/load_data/download/Retina_snRNA.h5ad
+      doublets: relabel
+      qc: doublets
+      merge: qc
+      split_data: merge
+    
+    relabel:
+      rename_columns:
+        sample_uuid: sample_id
+        library_uuid: library_id
+        suspension_uuid: suspension_id
+      rename_obsm_keys:
+        X_scVI: X_emb
+      new_columns:
+        file:  data/output/HRCA/ann_finest_level.tsv
+        index_col: index
+        order:
+          - index
+          - ann_finest_level
+
+    doublets:
+      counts: raw/X
+      batch: suspension_id
+      chunk_size: 50_000
+      use_gpu: true
+
+    qc:
+      counts: raw/X
+      plot_params:
+        max_groups: 150
+      hue:
+        - study_name
+        - donor_id
+        - donor_living_at_sample_collection
+        - tissue_type
+        - tissue_handling_interval
+        - sample_preservation_method
+        - suspension_derivation_process
+        - suspension_dissociation_reagent
+        - suspension_enriched_cell_types
+        - suspension_enrichment_factors
+        - suspension_id
+        - suspension_type
+        - sequencing_platform
+        # - author_cell_type
+        - majorclass
+        # - nCount_RNA
+        # - nFeature_RNA
+        - percent.mt
+        - cell_type
+        # - assay
+        - tissue
+
+
+  INTEGRATION_GLOBAL:
+    input:
+      preprocessing:
+        HRCA: data/pipeline/HRCA/merge/dataset~PREPARE_DATA.zarr
+      integration: preprocessing
+      split_data: integration
+      clustering: split_data
+      label_transfer: clustering
+    
+    clustering:
+      recompute_umap: true
+      recompute_neighbors: true
+
+
+  INTEGRATION_LINEAGE:
+    input:
+      preprocessing:
+        AC: data/pipeline/HRCA/split_data/dataset~PREPARE_DATA/file_id~merge:PREPARE_DATA/key~majorclass/value~AC.zarr
+        BC: data/pipeline/HRCA/split_data/dataset~PREPARE_DATA/file_id~merge:PREPARE_DATA/key~majorclass/value~BC.zarr
+        RGC: data/pipeline/HRCA/split_data/dataset~PREPARE_DATA/file_id~merge:PREPARE_DATA/key~majorclass/value~RGC.zarr
+      integration: preprocessing
+      clustering: integration
+      label_transfer: clustering
+
+
+  AC:
+    input:
+      metrics:
+        harmony_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=490bb22558--split_data_key=majorclass--split_data_value=AC.zarr
+        scvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=5beeb2163e--split_data_key=majorclass--split_data_value=AC.zarr
+        drvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=b75cc9b68f--split_data_key=majorclass--split_data_value=AC.zarr
+        scpoli_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=7db390bb3b--split_data_key=majorclass--split_data_value=AC.zarr
+        harmony_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:AC--integration=490bb22558.zarr
+        scvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:AC--integration=5beeb2163e.zarr
+        drvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:AC--integration=b75cc9b68f.zarr
+        scpoli_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:AC--integration=7db390bb3b.zarr
+      collect: metrics
+      majority_voting: collect
+
+    metrics:
+      gene_sets: AC
+
+
+  BC:
+    input:
+      metrics:
+        harmony_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=490bb22558--split_data_key=majorclass--split_data_value=BC.zarr
+        scvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=5beeb2163e--split_data_key=majorclass--split_data_value=BC.zarr
+        drvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=b75cc9b68f--split_data_key=majorclass--split_data_value=BC.zarr
+        scpoli_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=7db390bb3b--split_data_key=majorclass--split_data_value=BC.zarr
+        harmony_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:BC--integration=490bb22558.zarr
+        scvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:BC--integration=5beeb2163e.zarr
+        drvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:BC--integration=b75cc9b68f.zarr
+        scpoli_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:BC--integration=7db390bb3b.zarr
+      collect: metrics
+      majority_voting: collect
+
+    metrics:
+      gene_sets: BC
+
+
+  RGC:
+    input:
+      metrics:
+        harmony_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=490bb22558--split_data_key=majorclass--split_data_value=RGC.zarr
+        scvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=5beeb2163e--split_data_key=majorclass--split_data_value=RGC.zarr
+        drvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=b75cc9b68f--split_data_key=majorclass--split_data_value=RGC.zarr
+        scpoli_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=7db390bb3b--split_data_key=majorclass--split_data_value=RGC.zarr
+        harmony_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:RGC--integration=490bb22558.zarr
+        scvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:RGC--integration=5beeb2163e.zarr
+        drvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:RGC--integration=b75cc9b68f.zarr
+        scpoli_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:RGC--integration=7db390bb3b.zarr
+      collect: metrics
+      majority_voting: collect
+  
+    metrics:
+      gene_sets: RGC

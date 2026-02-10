@@ -1,0 +1,60 @@
+MARKER_GENES:
+  AC:
+    pan_AC:
+      - PAX6
+      - TFAP2B
+    
+    AC_gabaergic:
+      - GAD1  # GABA-synthetic enzyme
+      - GAD2  # GABA-synthetic enzyme
+    
+    AC_glycinergic:
+      - SLC6A9  # glycine transporter
+    
+    AC_starburst:
+      - CHAT  # general starburst identification
+      - MEGF10  # ON-SAC vs OFF-SAC distinction
+      - TENM3  # ON-SAC vs OFF-SAC distinction
+    
+    AC_TF:
+      - TFAP2A  # amacrine cell class regulator
+      - NFIX  # glycinergic amacrine specific
+
+  BC:
+    pan_BC:
+      - NEUROD4  # bipolar cell class regulator
+    
+    GB:
+      - AGBL1  # high specificity for GB
+      - UTRN   # giant bipolar marker
+    
+    BB:
+      - SORCS3  # high specificity for BB
+      - PBX1    # higher expression in BB vs GB
+    
+    BC_on:
+      - ISL1    # ON-bipolar cell regulator
+      - NFIX    # ON-bipolar cell specific
+    
+    BC_TF:
+      - SMAD9   # rod bipolar activator
+      - MEF2C   # rod bipolar activator/repressor
+      - ELK4    # blue bipolar activator
+      - SALL4   # blue bipolar activator
+      - DMBX1   # giant bipolar activator/repressor
+
+  RGC:
+    RGC_midget_off:
+      - TBR1   # OFF midget RGC (HRGC1)
+    
+    RGC_midget_on:
+      - TPBG   # ON midget RGC (HRGC2)
+    
+    RGC_parasol_off:
+      - FABP4   # OFF parasol RGC (HRGC6)
+
+    RGC_parasol_on:
+      - CHRNA2  # ON parasol RGC (HRGC7)
+    
+    RGC_photosensitive:
+      - OPN4    # intrinsically photosensitive RGC (HRGC10)

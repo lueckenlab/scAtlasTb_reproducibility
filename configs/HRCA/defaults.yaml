@@ -1,0 +1,305 @@
+resources:
+  cpu:
+    partition: preempted
+    qos: normal
+    gpu: 0
+    mem_mb: 150_000
+  gpu:
+    partition: preempted
+    qos: normal
+    gpu: 1
+    mem_mb: 150_000
+
+
+defaults:
+
+  relabel:
+    selective_update:
+      base_column: donor_age
+      new_column: age
+      update_map:
+        donor_age:
+          '>89 years': 90
+        development_stage:
+          '3-year-old stage': 3
+          '10-year-old stage': 10
+          '11-year-old stage': 11
+          '15-year-old stage': 15
+          '16-year-old stage': 16
+          '17-year-old stage': 17
+          '18-year-old stage': 18
+          '21-year-old stage': 21
+          '24-year-old stage': 24
+          '25-year-old stage': 25
+          '27-year-old stage': 27
+          '30-year-old stage': 30
+          '32-year-old stage': 32
+          '34-year-old stage': 34
+          '41-year-old stage': 41
+          '43-year-old stage': 43
+          '46-year-old stage': 46
+          '47-year-old stage': 47
+          '50-year-old stage': 50
+          '52-year-old stage': 52
+          '53-year-old stage': 53
+          '58-year-old stage': 58
+          '60-year-old stage': 60
+          '62-year-old stage': 62
+          '63-year-old stage': 63
+          '64-year-old stage': 64
+          '65-year-old stage': 65
+          '66-year-old stage': 66
+          '67-year-old stage': 67
+          '68-year-old stage': 68
+          '69-year-old stage': 69
+          '70-year-old stage': 70
+          '71-year-old stage': 71
+          '72-year-old stage': 72
+          '73-year-old stage': 73
+          '74-year-old stage': 74
+          '75-year-old stage': 75
+          '76-year-old stage': 76
+          '77-year-old stage': 77
+          '78-year-old stage': 78
+          '80-year-old stage': 80
+          '81-year-old stage': 81
+          '82-year-old stage': 82
+          '83-year-old stage': 83
+          '84-year-old stage': 84
+          '85-year-old stage': 85
+          '86-year-old stage': 86
+          '88-year-old stage': 88
+          '90-year-old stage': 90
+          'adult stage':
+
+
+  split_data:
+    key: majorclass
+    values:
+      - AC # amacrine cell
+      - BC # bipolar cell 
+      - RGC # retinal ganglion cell
+      # - Rod
+      # - Cone
+      # - HC
+      # - MG
+      # - Astrocyte
+      # - Microglia
+      # - RPE
+
+  preprocessing:
+    raw_counts: raw/X
+    normalize:
+      target_sum: 10_000
+    highly_variable_genes:
+      n_top_genes: 2000
+      batch_key: sample_id
+      dask: false
+    assemble:
+      - highly_variable_genes
+      - pca
+    colors:
+      - donor_id
+      - donor_age
+      - donor_cause_of_death
+      - tissue_source
+      - suspension_derivation_process
+      - tissue_handling_interval
+      - institute
+      - library_id_repository
+      - sequencing_platform
+      - is_primary_data
+      - author_cell_type
+      - majorclass
+      - AC_subclass
+      - AC_cluster
+      - AC_celltype_number
+      - BC_subclass
+      - RGC_cluster
+      - RGC_celltype_number
+      - study_name
+      - cell_type
+      - sex
+      - tissue
+      - self_reported_ethnicity
+      - development_stage
+      - n_genes
+      - n_counts
+      - percent_mito
+      - scrublet_score
+  
+  integration:
+    raw_counts: layers/counts
+    norm_counts: layers/normcounts
+    var_mask: highly_variable
+    neighbors:
+      n_neighbors: 50
+    batch: sample_id
+    output_types:
+      - embed
+    umap_colors:
+      - donor_id
+      - donor_age
+      - donor_cause_of_death
+      - tissue_source
+      - suspension_derivation_process
+      - tissue_handling_interval
+      - institute
+      - library_id_repository
+      - sequencing_platform
+      - is_primary_data
+      - author_cell_type
+      - majorclass
+      - AC_subclass
+      - AC_cluster
+      - AC_celltype_number
+      - BC_subclass
+      - RGC_cluster
+      - RGC_celltype_number
+      - study_name
+      - cell_type
+      - sex
+      - tissue
+      - self_reported_ethnicity
+      - development_stage
+      - n_genes
+      - n_counts
+      - percent_mito
+      - scrublet_score
+    methods:
+      harmony_pytorch:
+        n_comps: 50
+        scale: false
+      scvi:
+        n_layers: 2
+        n_latent: 128
+        encode_covariates: True
+        deeply_inject_covariates: False
+        use_layer_norm: both
+        use_batch_norm: none
+        gene_likelihood: nb
+        max_epochs: 100
+        early_stopping: true
+      drvi:
+        n_latent: 128
+        encoder_dims:
+          - [128, 128]
+        decoder_dims:
+          - [128, 128]
+        max_epochs: 50
+        early_stopping: true
+      scpoli:
+        cell_type_keys: # unsupervised
+        embedding_dims: 128
+        recon_loss: nb
+        n_epochs: 50
+        unlabeled_prototype_training: false
+        eta: 0.3
+
+  metrics:
+    unintegrated: layers/normcounts
+    raw_counts: layers/counts
+    var_mask: highly_variable
+    overwrite_file_id: true
+    funkyheatmap:
+      weight_batch: 0.4
+    label: ann_finest_level
+    batch: sample_id
+    gene_sets: AC, BC, RGC
+    covariates:
+      - sex
+      - age
+    metrics:
+      - nmi
+      - ari
+      - cell_cycle
+      - clisi
+      - ilisi
+      # - graph_connectivity
+      - isolated_label_f1
+      - pcr_comparison
+      - bras_batch
+      - morans_i_genes
+      - morans_i_genescore
+      - morans_i
+      - kbet_pg
+  
+  marker_genes:
+    sample: sample_id
+    groups:
+      - majority_reference
+      - leiden_0.5_2
+    # marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
+    rank_genes_groups:
+      reference: rest
+      method: wilcoxon
+    plot:
+      n_genes: 10
+    layer: layers/normcounts
+  
+  clustering:
+    algorithm: leiden
+    use_gpu: false
+    neighbors:
+      use_rep: X_emb
+      n_neighbors: 50
+      metric: euclidean
+    resolutions:
+      - 0.5
+    hierarchy:
+      2: 0.3
+      3: 0.2
+    umap_colors:
+      - donor_id
+      - donor_age
+      - donor_cause_of_death
+      - tissue_source
+      - suspension_derivation_process
+      - tissue_handling_interval
+      - institute
+      - library_id_repository
+      - sequencing_platform
+      - is_primary_data
+      - author_cell_type
+      - majorclass
+      - AC_subclass
+      - AC_cluster
+      - AC_celltype_number
+      - BC_subclass
+      - RGC_cluster
+      - RGC_celltype_number
+      - study_name
+      - cell_type
+      - sex
+      - tissue
+      - self_reported_ethnicity
+      - development_stage
+      - n_genes
+      - n_counts
+      - percent_mito
+      - scrublet_score
+
+  collect:
+    sep: --
+    same_slots:
+      - X
+      - var
+      - layers
+    merge_slots:
+      - obs
+      - obsm
+      - obsp
+      - uns
+    skip_slots:
+      - raw
+    
+  label_transfer:
+    majority_reference:
+      reference_key: ann_finest_level
+      query_key: leiden_0.5_3
+      crosstab_kwargs:
+        dropna: true
+  
+  majority_voting:
+      columns:
+        - majority_reference--.*
