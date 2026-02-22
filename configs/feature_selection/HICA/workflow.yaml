@@ -1,90 +1,35 @@
 DATASETS:
-  
-  HICA_predict_lineage:
-    input:
-      preprocessing:
-        AIDA: data/input/hca_out/load_data/merged/study/AIDA.zarr
-        Ahern2022: data/input/hca_out/load_data/merged/study/Ahern2022.zarr
-        Hao2021: data/input/hca_out/load_data/merged/study/Hao2021.zarr
-        Lee2020: data/input/hca_out/load_data/merged/study/Lee2020.zarr
-        Perez2022: data/input/hca_out/load_data/merged/study/Perez2022.zarr
-        Schulte2020: data/input/hca_out/load_data/merged/study/SchulteSchrepping2020.zarr
-        Stephenson2021: data/input/hca_out/load_data/merged/study/Stephenson2021.zarr
-        VentoTormo: data/input/hca_out/load_data/merged/study/VentoTormo.zarr
-        Yazar2022: data/input/hca_out/load_data/merged/study/Yazar2022.zarr
-        Yoshida2022: data/input/hca_out/load_data/merged/study/Yoshida2022.zarr
-        Liu2021: data/input/hca_out/load_data/merged/study/Liu2021.zarr
-        vanderWijst2021: data/input/hca_out/load_data/merged/study/vanderWijst2021.zarr
-      clustering: preprocessing
-      celltype_prediction: clustering
-      relabel: celltype_prediction
-      merge: relabel
-      split_data: merge
 
-    preprocessing:
-      assemble:
-        - normalize
-        - highly_variable_genes
-        - pca
-        - neighbors
-        - umap
-      colors:
-        - assay
-        - batch
-        - pool
-        - study
-        - author_annotation
-        - disease
-        - sex
+  prepare_data:
+    input:
+      filter:
+        All: data/input/hca_out/relabel/dataset~Benchmark_prepare_data/file_id~All.zarr
+      split_data: filter
     
-    clustering:
-      use_gpu: false
-      resolutions: 0.8
-      hierarchy: 3
-      algorithm: leiden
-    
-    celltype_prediction:
-      reference_label: author_annotation
-      norm_counts: layers/normcounts
-      celltypist:
-        params:
-          majority_voting: true
-          over_clustering: leiden_0.8_3
-        models:
-          - Healthy_COVID19_PBMC
-          - COVID19_HumanChallenge_Blood
-    
-    relabel:
-      new_columns:
-        file: configs/celltypist_Healthy_COVID19_PBMC_lineage.tsv
-        order:
-          # - celltypist_COVID19_HumanChallenge_Blood:majority_voting
-          - celltypist_Healthy_COVID19_PBMC:majority_voting
-          - lineage
-    
-    merge:
-      slots:
-        X: layers/counts
-        obs: obs
-        var: var
-      dask: true 
+    filter:
+      subset: true
+      dask: true
       backed: true
-      threads: 100
+      remove_by_column:
+        qc_status:
+          - failed
+        # disease:
+        #   - HIV_vax
 
 
-  HICA_per_lineage:
+  per_lineage:
     input:
       preprocessing:
-        B_cells: "data/pipeline/feature_selection/HICA/split_data/dataset~HICA_predict_lineage/file_id~merge:HICA_predict_lineage/\
-          key~lineage/value~B_cells.zarr"
-        Myeloid: "data/pipeline/feature_selection/HICA/split_data/dataset~HICA_predict_lineage/file_id~merge:HICA_predict_lineage/\
-          key~lineage/value~Myeloid.zarr"
-        Other: "data/pipeline/feature_selection/HICA/split_data/dataset~HICA_predict_lineage/file_id~merge:HICA_predict_lineage/\
-          key~lineage/value~Other.zarr"
-        TCD4_cells: "data/pipeline/feature_selection/HICA/split_data/dataset~HICA_predict_lineage/file_id~merge:HICA_predict_lineage/\
-          key~lineage/value~TCD4_cells.zarr"
-        TCD8_NK_cells: "data/pipeline/feature_selection/HICA/split_data/dataset~HICA_predict_lineage/file_id~merge:HICA_predict_lineage/\
-          key~lineage/value~TCD8_NK_cells.zarr"
+        B_plasma: "data/pipeline/feature_selection/HICA/split_data/dataset~prepare_data/file_id~filter:All/\
+          key~oc_lineage/value~B_plasma.zarr"
+        Myeloid: "data/pipeline/feature_selection/HICA/split_data/dataset~prepare_data/file_id~filter:All/\
+          key~oc_lineage/value~Myeloid.zarr"
+        Other: "data/pipeline/feature_selection/HICA/split_data/dataset~prepare_data/file_id~filter:All/\
+          key~oc_lineage/value~Other.zarr"
+        TCD4: "data/pipeline/feature_selection/HICA/split_data/dataset~prepare_data/file_id~filter:All/\
+          key~oc_lineage/value~TCD4.zarr"
+        TCD8_NK: "data/pipeline/feature_selection/HICA/split_data/dataset~prepare_data/file_id~filter:All/\
+          key~oc_lineage/value~TCD8_NK.zarr"
       integration: preprocessing
       clustering: integration
       label_transfer: clustering
@@ -103,15 +48,15 @@ DATASETS:
           dropna: true
 
 
-  HICA_global:
+  global:
     input:
       preprocessing:
-        All: data/pipeline/feature_selection/HICA/merge/dataset~HICA_predict_lineage.zarr
+        All: data/pipeline/feature_selection/HICA/filter/dataset~prepare_data/file_id~All.zarr
       integration: preprocessing
-      metrics: integration
+      split_data: integration
+      metrics: integration,split_data
       clustering: integration
       label_transfer: clustering
-      split_data: label_transfer
       collect: label_transfer
       majority_voting: collect
     
@@ -135,47 +80,47 @@ DATASETS:
         - majority_reference--.*
 
 
-  HICA_B_collect:
-    input:
-      metrics:
-         # unintegrated
-          integration=unintegrated--strategy=lineage: "data/pipeline/feature_selection/HICA/clustering/dataset~HICA_per_lineage/\
-            file_id~integration:preprocessing:B_cells--integration=a13194f661.zarr"
-          integration=unintegrated--strategy=global: "data/pipeline/feature_selection/HICA/split_data/dataset~HICA_global/\
-            file_id~label_transfer:clustering:integration:preprocessing:All--integration=a13194f661/key~lineage/value~B_cells.zarr"
-          # harmony
-          integration=harmony_scaled--strategy=lineage: "data/pipeline/feature_selection/HICA/clustering/dataset~HICA_per_lineage/\
-            file_id~integration:preprocessing:B_cells--integration=244c527d9e.zarr"
-          integration=harmony_scaled--strategy=global: "data/pipeline/feature_selection/HICA/split_data/dataset~HICA_global/\
-            file_id~label_transfer:clustering:integration:preprocessing:All--integration=244c527d9e/key~lineage/value~B_cells.zarr"
-          integration=harmony_unscaled--strategy=lineage: "data/pipeline/feature_selection/HICA/clustering/dataset~HICA_per_lineage/\
-            file_id~integration:preprocessing:B_cells--integration=2c75ca29de.zarr"
-          integration=harmony_unscaled--strategy=global: "data/pipeline/feature_selection/HICA/split_data/dataset~HICA_global/\
-            file_id~label_transfer:clustering:integration:preprocessing:All--integration=2c75ca29de/key~lineage/value~B_cells.zarr"
-          # scvi
-          integration=scvi_30--strategy=lineage: "data/pipeline/feature_selection/HICA/clustering/dataset~HICA_per_lineage/\
-            file_id~integration:preprocessing:B_cells--integration=c3388d9dea.zarr"
-          integration=scvi_30--strategy=global: "data/pipeline/feature_selection/HICA/split_data/dataset~HICA_global/\
-            file_id~label_transfer:clustering:integration:preprocessing:All--integration=c3388d9dea/key~lineage/value~B_cells.zarr"
-          integration=scvi_128--strategy=lineage: "data/pipeline/feature_selection/HICA/clustering/dataset~HICA_per_lineage/\
-            file_id~integration:preprocessing:B_cells--integration=0dc489f4a5.zarr"
-          integration=scvi_128--strategy=global: "data/pipeline/feature_selection/HICA/split_data/dataset~HICA_global/\
-            file_id~label_transfer:clustering:integration:preprocessing:All--integration=0dc489f4a5/key~lineage/value~B_cells.zarr"
-          # drvi
-          integration=drvi--strategy=lineage: "data/pipeline/feature_selection/HICA/clustering/dataset~HICA_per_lineage/\
-            file_id~integration:preprocessing:B_cells--integration=8549126649.zarr"
-          integration=drvi--strategy=global: "data/pipeline/feature_selection/HICA/split_data/dataset~HICA_global/\
-            file_id~label_transfer:clustering:integration:preprocessing:All--integration=8549126649/key~lineage/value~B_cells.zarr"
-          # scpoli
-          integration=scpoli--strategy=lineage: "data/pipeline/feature_selection/HICA/clustering/dataset~HICA_per_lineage/\
-            file_id~integration:preprocessing:B_cells--integration=8f942f4628.zarr"
-          integration=scpoli--strategy=global: "data/pipeline/feature_selection/HICA/split_data/dataset~HICA_global/\
-            file_id~label_transfer:clustering:integration:preprocessing:All--integration=8f942f4628/key~lineage/value~B_cells.zarr"
-      marker_genes: metrics
-      collect: marker_genes
-      majority_voting: collect
-    metrics:
-      gene_sets: B
-    majority_voting:
-      columns:
-        - majority_reference--.*
+  # B_collect:
+  #   input:
+  #     metrics:
+  #        # unintegrated
+  #         integration=unintegrated--strategy=lineage: "data/pipeline/feature_selection/HICA/label_transfer/dataset~per_lineage/\
+  #           file_id~clustering:integration:preprocessing:B_cells--integration=b6db15edb2.zarr"
+  #         integration=unintegrated--strategy=global: "data/pipeline/feature_selection/HICA/split_data/dataset~global/\
+  #           file_id~label_transfer:clustering:integration:preprocessing:All--integration=b6db15edb2/key~lineage/value~B_cells.zarr"
+  #         # harmony
+  #         integration=harmony_scaled--strategy=lineage: "data/pipeline/feature_selection/HICA/label_transfer/dataset~per_lineage/\
+  #           file_id~clustering:integration:preprocessing:B_cells--integration=8db25de1ea.zarr"
+  #         integration=harmony_scaled--strategy=global: "data/pipeline/feature_selection/HICA/label_transfer/dataset~global/\
+  #           file_id~label_transfer:clustering:integration:preprocessing:All--integration=8db25de1ea/key~lineage/value~B_cells.zarr"
+  #         integration=harmony_unscaled--strategy=lineage: "data/pipeline/feature_selection/HICA/label_transfer/dataset~per_lineage/\
+  #           file_id~clustering:integration:preprocessing:B_cells--integration=8e0d2946c2.zarr"
+  #         integration=harmony_unscaled--strategy=global: "data/pipeline/feature_selection/HICA/label_transfer/dataset~global/\
+  #           file_id~label_transfer:clustering:integration:preprocessing:All--integration=8e0d2946c2/key~lineage/value~B_cells.zarr"
+  #         # scvi
+  #         integration=scvi_30--strategy=lineage: "data/pipeline/feature_selection/HICA/clustering/dataset~per_lineage/\
+  #           file_id~integration:preprocessing:B_cells--integration=dcf9672da4.zarr"
+  #         integration=scvi_30--strategy=global: "data/pipeline/feature_selection/HICA/split_data/dataset~global/\
+  #           file_id~label_transfer:clustering:integration:preprocessing:All--integration=c3388d9dea/key~lineage/value~B_cells.zarr"
+  #         integration=scvi_128--strategy=lineage: "data/pipeline/feature_selection/HICA/clustering/dataset~per_lineage/\
+  #           file_id~integration:preprocessing:B_cells--integration=51114673bc.zarr"
+  #         integration=scvi_128--strategy=global: "data/pipeline/feature_selection/HICA/split_data/dataset~global/\
+  #           file_id~label_transfer:clustering:integration:preprocessing:All--integration=0dc489f4a5/key~lineage/value~B_cells.zarr"
+  #         # drvi
+  #         integration=drvi--strategy=lineage: "data/pipeline/feature_selection/HICA/clustering/dataset~per_lineage/\
+  #           file_id~integration:preprocessing:B_cells--integration=8549126649.zarr"
+  #         integration=drvi--strategy=global: "data/pipeline/feature_selection/HICA/split_data/dataset~global/\
+  #           file_id~label_transfer:clustering:integration:preprocessing:All--integration=8549126649/key~lineage/value~B_cells.zarr"
+  #         # scpoli
+  #         integration=scpoli--strategy=lineage: "data/pipeline/feature_selection/HICA/clustering/dataset~per_lineage/\
+  #           file_id~integration:preprocessing:B_cells--integration=8f942f4628.zarr"
+  #         integration=scpoli--strategy=global: "data/pipeline/feature_selection/HICA/split_data/dataset~global/\
+  #           file_id~label_transfer:clustering:integration:preprocessing:All--integration=8f942f4628/key~lineage/value~B_cells.zarr"
+  #     marker_genes: metrics
+  #     collect: marker_genes
+  #     majority_voting: collect
+  #   metrics:
+  #     gene_sets: B
+  #   majority_voting:
+  #     columns:
+  #       - majority_reference--.*
