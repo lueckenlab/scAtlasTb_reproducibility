@@ -11,5 +11,6 @@ snakemake \
     configs/HICA_gene_sets.yaml  \
     configs/feature_selection/HICA/defaults.yaml  \
     configs/feature_selection/HICA/workflow.yaml \
+    configs/feature_selection/HICA/DC_integration.yaml \
   --snakefile $pipeline/workflow/Snakefile \
     $@

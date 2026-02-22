@@ -1,0 +1,210 @@
+DATASETS:
+  DC:
+    input:
+      filter:
+        DC: data/pipeline/feature_selection/HICA/filter/dataset~prepare_data/file_id~All.zarr
+      preprocessing: filter
+      integration: preprocessing
+      metrics: integration
+      clustering: integration
+      label_transfer: clustering
+      collect: label_transfer
+      majority_voting: collect
+      # marker_genes: majority_voting
+    
+    filter:
+      write_copy: true
+      keep_by_query:
+        - '`celltypist_Healthy_COVID19_PBMC:majority_voting`.str.contains("DC") & 
+          `celltypist_COVID19_HumanChallenge_Blood:majority_voting`.str.contains("DC")'
+      remove_by_query:
+        - 'oc_lineage != "Myeloid"'
+
+    preprocessing:
+      use_gpu: true
+      highly_variable_genes:
+        dask: false
+        n_top_genes: 5000
+        batch_key: library_id
+        flavor:
+          - seurat
+          - seurat_v3_paper
+          - cell_ranger
+        span: 1
+      extra_hvgs:
+        dask: false
+        overwrite_args:
+          n_top_genes: 5000
+          batch_key: library_id
+          flavor:
+            - seurat
+            - seurat_v3_paper
+            - cell_ranger
+          span: 1
+        remove_genes:
+          - XIST
+          # other sex determining genes
+          - https://raw.githubusercontent.com/prabhakarlab/AIDA_Phase1/master/01_QualityControl/list_chrY_nonPAR_genes.txt
+          # # cell cycle genes
+          # - configs/feature_selection/cell_cycle_genes.txt
+          # low quality genes
+          - ^RP.*
+          - ^MT-.*
+        extra_genes:
+          - S100A8
+          - XCR1
+          - LAMP3
+          - CD207
+          - CCR7
+          - CD1A
+          - S100A9
+          - CLEC9A
+          - AXL
+          - CD1C
+          - CD14
+          - CD5
+  
+    integration:
+      var_mask:
+        - extra_hvgs--batch_key=library_id--flavor=seurat--n_top_genes=5000--span=1
+        - extra_hvgs--batch_key=library_id--flavor=seurat_v3_paper--n_top_genes=5000--span=1
+        - extra_hvgs--batch_key=library_id--flavor=cell_ranger--n_top_genes=5000--span=1
+        - highly_variable--batch_key=library_id--flavor=seurat--n_top_genes=5000--span=1
+        - highly_variable--batch_key=library_id--flavor=seurat_v3_paper--n_top_genes=5000--span=1
+        - highly_variable--batch_key=library_id--flavor=cell_ranger--n_top_genes=5000--span=1
+      methods:
+        unintegrated:
+        harmony_pytorch:
+          n_comps: 50
+          scale: true
+        # scvi:
+        #   n_latent:
+        #     - 30
+        #     - 128
+        #   n_hidden: 128
+        #   n_layers: 2
+        #   dispersion: gene-batch
+        #   dropout_rate: 0.2
+        #   early_stopping: true
+        #   max_epochs: 200
+        #   use_observed_lib_size: true
+        drvi:
+          n_latent: 128
+          encoder_dims:
+            - [128, 128]
+          decoder_dims:
+            - [128, 128]
+          max_epochs: 200
+          plan_kwargs:
+          - n_epochs_kl_warmup: 200
+      umap_colors:
+        - assay
+        - sequenced_fragment
+        - study
+        - disease
+        - disease_coarse
+        - sex
+        - sex_predicted_chrY
+        - age
+        - age_midpoint
+        - harmonized_cellhint
+        - celltypist_Healthy_COVID19_PBMC:majority_voting
+        - celltypist_COVID19_HumanChallenge_Blood:majority_voting
+        - scrublet_score
+        - percent_mito
+        - percent_ribo
+        - n_counts
+        - n_genes
+        - IFI6
+        - XIST
+        # cell_cycle markers
+        - CDK1
+        - CCNB2
+        - MKI67
+        - CDC20
+        - AURKA
+        - TOP2A
+        - PCNA
+        - UBE2C
+        # DC reprogramming markers
+        - CD207
+        - TLR10
+        - IL22RA2
+        - CD1A
+        - CD1E
+        - IL12A
+        - LAMP3
+        - PTGDS
+        - LCNL1
+
+    metrics:
+      var_mask: highly_variable
+      gene_sets: Myeloid
+      funkyheatmap:
+        group_col: integration_method
+
+    clustering:
+      resolutions: 0.5
+      hierarchy:
+        2: 0.3
+      umap_colors:
+        - assay
+        - sequenced_fragment
+        - study
+        - harmonized_cellhint
+        - celltypist_Healthy_COVID19_PBMC:majority_voting
+        - celltypist_COVID19_HumanChallenge_Blood:majority_voting
+        - qc_status
+        - scrublet_score
+        - percent_mito
+        - percent_ribo
+        - n_counts
+        - n_genes
+        - disease
+        - sex
+        - sex_predicted_chrY
+        - IFI6
+        - XIST
+        # cell_cycle markers
+        - CDK1
+        - CCNB2
+        - MKI67
+        - CDC20
+        - AURKA
+        - TOP2A
+        - PCNA
+        - UBE2C
+        # DC reprogramming markers
+        - CD207
+        - TLR10
+        - IL22RA2
+        - CD1A
+        - CD1E
+        - IL12A
+        - LAMP3
+    
+    marker_genes:
+      sample: sample_id
+      marker_genes: Myeloid
+      rank_genes_groups:
+        reference: rest
+        n_genes: 100
+        method: wilcoxon
+      plot:
+        n_genes: 5
+        min_logfoldchange: 3
+      groups:
+        - leiden_0.5_1--label_transfer:clustering:integration:preprocessing:filter:DC--integration=581851249a
+        - leiden_0.5_2--label_transfer:clustering:integration:preprocessing:filter:DC--integration=581851249a
+        - majority_consensus
+
+    label_transfer:
+      majority_reference:
+        reference_key: celltypist_Healthy_COVID19_PBMC:majority_voting
+        query_key: leiden_0.5_2
+        crosstab_kwargs:
+          dropna: true
+    
+    majority_voting:
+      columns:
+        - majority_reference--.*
