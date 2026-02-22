@@ -1,0 +1,170 @@
+output_dir: data/pipeline/feature_selection/HICA_CXG
+images: data/images/feature_selection/HICA_CXG
+
+DATASETS:
+  
+  predict_lineage:
+    input:
+      preprocessing:
+        AIDA: data/pipeline/load_data/merged/study/AIDA.zarr
+        Ahern2022: data/pipeline/load_data/merged/study/Ahern2022.zarr
+        Hao2021: data/pipeline/load_data/merged/study/Hao2021.zarr # 20264 genes
+        Lee2020: data/pipeline/load_data/merged/study/Lee2020.zarr
+        Perez2022: data/pipeline/load_data/merged/study/Perez2022.zarr
+        Schulte2020: data/pipeline/load_data/merged/study/SchulteSchrepping2020.zarr
+        Stephenson2021: data/pipeline/load_data/merged/study/Stephenson2021.zarr # 24245 genes
+        VentoTormo: data/pipeline/load_data/merged/study/VentoTormo.zarr # 21858 genes
+        Yazar2022: data/pipeline/load_data/merged/study/Yazar2022.zarr
+        Yoshida2022: data/pipeline/load_data/merged/study/Yoshida2022.zarr
+        Liu2021: data/pipeline/load_data/merged/study/Liu2021.zarr
+        vanderWijst2021: data/pipeline/load_data/merged/study/vanderWijst2021.zarr # 18006 genes
+      clustering: preprocessing
+      celltype_prediction: clustering
+      relabel: celltype_prediction
+      merge: relabel
+      sample_representation: merge
+      split_data: merge
+
+    preprocessing:
+      highly_variable_genes:
+        n_top_genes: 5000
+        batch_key: 
+      assemble:
+        - normalize
+        - highly_variable_genes
+        - pca
+        - neighbors
+        - umap
+      colors:
+        - assay
+        - batch
+        - pool
+        - study
+        - author_annotation
+        - disease
+        - sex
+    
+    clustering:
+      use_gpu: false
+      resolutions: 0.8
+      hierarchy: 3
+      algorithm: leiden
+    
+    celltype_prediction:
+      reference_label: author_annotation
+      norm_counts: layers/normcounts
+      celltypist:
+        params:
+          majority_voting: true
+          over_clustering: leiden_0.8_3
+        models:
+          - Healthy_COVID19_PBMC
+          - COVID19_HumanChallenge_Blood
+    
+    relabel:
+      new_columns:
+        file: configs/celltypist_Healthy_COVID19_PBMC_lineage.tsv
+        order:
+          # - celltypist_COVID19_HumanChallenge_Blood:majority_voting
+          - celltypist_Healthy_COVID19_PBMC:majority_voting
+          - lineage
+      merge_columns:
+        file: configs/feature_selection/HICA/batch_definition.tsv
+        sep: '-'
+    
+    merge:
+      slots:
+        X: layers/counts
+        obs: obs
+        var: var
+      dask: true 
+      backed: true
+      threads: 100
+
+    sample_representation:
+      sample_key: tech_id,celltypist_Healthy_COVID19_PBMC:majority_voting
+      raw_counts: layers/counts
+      methods:
+        pseudobulk:
+      colors:
+        - batch
+        - library_id
+        - study
+        - celltypist_Healthy_COVID19_PBMC:majority_voting
+        - lineage
+        - author_annotation
+        - disease
+        - sex
+        - assay
+        - CXCL10
+        - IFI6
+        - XIST
+
+
+  per_lineage:
+    input:
+      preprocessing:
+        B_cells: "data/pipeline/feature_selection/HICA_CXG/split_data/dataset~predict_lineage/file_id~merge:predict_lineage/\
+          key~lineage/value~B_cells.zarr"
+        Myeloid: "data/pipeline/feature_selection/HICA_CXG/split_data/dataset~predict_lineage/file_id~merge:predict_lineage/\
+          key~lineage/value~Myeloid.zarr"
+        Other: "data/pipeline/feature_selection/HICA_CXG/split_data/dataset~predict_lineage/file_id~merge:predict_lineage/\
+          key~lineage/value~Other.zarr"
+        TCD4_cells: "data/pipeline/feature_selection/HICA_CXG/split_data/dataset~predict_lineage/file_id~merge:predict_lineage/\
+          key~lineage/value~TCD4_cells.zarr"
+        TCD8_NK_cells: "data/pipeline/feature_selection/HICA_CXG/split_data/dataset~predict_lineage/file_id~merge:predict_lineage/\
+          key~lineage/value~TCD8_NK_cells.zarr"
+      integration: preprocessing
+      clustering: integration
+      label_transfer: clustering
+    
+    clustering:
+      resolutions: 1.0
+      hierarchy:
+        2: 0.3
+        3: 0.2
+    
+    label_transfer:
+      majority_reference:
+        reference_key: celltypist_Healthy_COVID19_PBMC:majority_voting
+        query_key: leiden_1.0_3
+        crosstab_kwargs:
+          dropna: true
+
+
+  global:
+    input:
+      preprocessing:
+        All: data/pipeline/feature_selection/HICA_CXG/merge/dataset~predict_lineage.zarr
+      integration: preprocessing
+      metrics: integration
+      clustering: integration
+      label_transfer: clustering
+      split_data: label_transfer
+      collect: label_transfer
+      majority_voting: collect
+    
+    preprocessing:
+      highly_variable_genes:
+        n_top_genes: 5000
+        batch_key: library_id
+        dask: true
+
+    clustering:
+      recompute_umap: true
+      recompute_neighbors: true
+      resolutions: 1.0
+      hierarchy:
+        2: 0.5
+        3: 0.2
+    
+    label_transfer:
+      majority_reference:
+        reference_key: celltypist_Healthy_COVID19_PBMC:majority_voting
+        query_key: leiden_1.0_3
+        crosstab_kwargs:
+          dropna: true
+    
+    majority_voting:
+      columns:
+        - majority_reference--.*
