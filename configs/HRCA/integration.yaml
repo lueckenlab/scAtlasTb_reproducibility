@@ -66,14 +66,49 @@ DATASETS:
       preprocessing:
         HRCA: data/pipeline/HRCA/merge/dataset~PREPARE_DATA.zarr
       integration: preprocessing
-      split_data: integration
+      reference_mapping: preprocessing
+      split_data: integration, reference_mapping
       clustering: split_data
       label_transfer: clustering
     
+    reference_mapping:
+      scimilarity:
+        model: data/input/scimilarity/model_v1.1
+        layer: layers/counts
+        var_key: feature_name
+      umap_colors:
+        - donor_id
+        - donor_age
+        - donor_cause_of_death
+        - tissue_source
+        - suspension_derivation_process
+        - tissue_handling_interval
+        - institute
+        - library_id_repository
+        - sequencing_platform
+        - is_primary_data
+        - author_cell_type
+        - majorclass
+        - AC_subclass
+        - AC_cluster
+        - AC_celltype_number
+        - BC_subclass
+        - RGC_cluster
+        - RGC_celltype_number
+        - study_name
+        - cell_type
+        - sex
+        - tissue
+        - self_reported_ethnicity
+        - development_stage
+        - n_genes
+        - n_counts
+        - percent_mito
+        - scrublet_score
+
     clustering:
       recompute_umap: true
       recompute_neighbors: true
-
 
   INTEGRATION_LINEAGE:
     input:
@@ -93,6 +128,7 @@ DATASETS:
         scvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=5beeb2163e--split_data_key=majorclass--split_data_value=AC.zarr
         drvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=b75cc9b68f--split_data_key=majorclass--split_data_value=AC.zarr
         scpoli_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=7db390bb3b--split_data_key=majorclass--split_data_value=AC.zarr
+        scimilarity: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:reference_mapping:preprocessing:HRCA--split_data_key=majorclass--split_data_value=AC.zarr
         harmony_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:AC--integration=490bb22558.zarr
         scvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:AC--integration=5beeb2163e.zarr
         drvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:AC--integration=b75cc9b68f.zarr
@@ -111,6 +147,7 @@ DATASETS:
         scvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=5beeb2163e--split_data_key=majorclass--split_data_value=BC.zarr
         drvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=b75cc9b68f--split_data_key=majorclass--split_data_value=BC.zarr
         scpoli_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=7db390bb3b--split_data_key=majorclass--split_data_value=BC.zarr
+        scimilarity: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:reference_mapping:preprocessing:HRCA--split_data_key=majorclass--split_data_value=BC.zarr
         harmony_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:BC--integration=490bb22558.zarr
         scvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:BC--integration=5beeb2163e.zarr
         drvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:BC--integration=b75cc9b68f.zarr
@@ -129,6 +166,7 @@ DATASETS:
         scvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=5beeb2163e--split_data_key=majorclass--split_data_value=RGC.zarr
         drvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=b75cc9b68f--split_data_key=majorclass--split_data_value=RGC.zarr
         scpoli_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=7db390bb3b--split_data_key=majorclass--split_data_value=RGC.zarr
+        scimilarity: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:reference_mapping:preprocessing:HRCA--split_data_key=majorclass--split_data_value=RGC.zarr
         harmony_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:RGC--integration=490bb22558.zarr
         scvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:RGC--integration=5beeb2163e.zarr
         drvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:RGC--integration=b75cc9b68f.zarr
