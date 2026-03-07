@@ -7,9 +7,7 @@ DATASETS:
       filter: relabel
       split_data: filter
       doublets: split_data
-      clustering: doublets
-      celltype_prediction: clustering
-      qc: celltype_prediction
+      qc: doublets
       merge: qc
 
     relabel:
@@ -20,7 +18,7 @@ DATASETS:
         new_column: ann_finest_level
         update_map:
           ann_finest_level:
-            'Unknown': 
+            'Unknown': # remove labels for "Unknown" cells
 
     filter:
       dask: true
@@ -68,95 +66,141 @@ DATASETS:
       resolutions: 0.5
       hierarchy: 3
 
-    celltype_prediction:
-      reference_label: original_ann_nonharmonized
-      counts: raw/X
-      is_normalized: false
-      celltypist:
-        params:
-          majority_voting: true
-          over_clustering: leiden_0.5_3
-        models:
-          - Human_Lung_Atlas
-
     qc:
       counts: raw/X  
       hue:
-        - original_ann_nonharmonized
-        - original_ann_level_1
         - original_ann_level_2
+        - dataset
         - assay
-        - donor_id
-        - fresh_or_frozen
-        - sex
-        - lung_condition
         - sequencing_platform
-        - smoking_status
-        - subject_type
-        - tissue_dissociation_protocol
-        - tissue_level_2
         - scrublet_score
+        - doubletdetection_score
       scautoqc_metrics:
         - n_counts
         - n_genes
         - percent_mito
+        - scrublet_score
 
     merge:
-      dask: false
-      backed: false
+      slots:
+        X: X
+        obs: obs
+        var: var
+        obsm: obsm
+      dask: true 
+      backed: true
+      threads: 50
+      persist: true
 
-
+  extended:
+    input:
+      clustering:
+        extended: data/pipeline/qc/relabel/dataset~HLCA_extended_qc/file_id~extended.zarr
+      label_transfer: clustering
+    clustering:
+      recompute_umap: true
+      recompute_neighbors: true
+  
   extended_only:
     input:
       clustering:
         extended: data/pipeline/qc/merge/dataset~HLCA_extended_qc.zarr
       label_transfer: clustering
-    
     clustering:
-      recompute_umap: true
+      recompute_umap: false
       recompute_neighbors: true
 
+  de_novo_extended:
+    input:
+      preprocessing:
+        # original core + extended dataset
+        extended: data/pipeline/qc/relabel/dataset~HLCA_extended_qc/file_id~extended.zarr
+      integration: preprocessing
+      clustering: integration
+      label_transfer: clustering
+
+    preprocessing:
+      highly_variable_genes:
+        n_top_genes: 2000
+        batch_key: dataset
+        dask: true
+    
+    integration:
+      methods:
+        scvi:
+          n_layers: 2
+          n_latent: 30
+          encode_covariates: true
+          deeply_inject_covariates: false
+          use_layer_norm: both
+          use_batch_norm: none
+          gene_likelihood: nb
+          max_epochs: 100
+          early_stopping: true
+          early_stopping_monitor: elbo_validation
+          early_stopping_patience: 10
+          early_stopping_min_delta: 0.0
+          plan_kwargs:
+            reduce_lr_on_plateau: true
+            lr_patience: 8
+            lr_factor: 0.1
+            weight_decay: 0.0
 
   map_extended:
     input:      
-      reference_mapping: data/pipeline/qc/merge/dataset~HLCA_extended_qc.zarr
+      reference_mapping:
+        extended: data/pipeline/qc/merge/dataset~HLCA_extended_qc.zarr
+      relabel:
+        highQC: data/pipeline/qc/relabel/dataset~HLCA_map_to_highQC/file_id~merge:HLCA_map_to_highQC.zarr
       merge:
         extended: reference_mapping
-        highQC: data/pipeline/qc/relabel/dataset~HLCA_map_to_highQC/file_id~merge:HLCA_map_to_highQC.zarr
+        highQC: relabel
       clustering: merge
       label_transfer: clustering
       collect:
-        highQC: label_transfer
-        HLCAv1: data/pipeline/load_data/download/HLCAv1_extended.h5ad
-
-    filter:
-      dask: true
-      keep_by_column:
-        core_or_extension:
-          - extension
+        highQC_extended: label_transfer
+        HLCAv1: data/pipeline/qc/relabel/dataset~HLCA_extended_qc/file_id~extended.zarr # original core + extended dataset
+    
+    relabel:
+      constant_columns:
+        core_or_extension: core
 
     reference_mapping:
+      threads: 16
       scarches:
         model: "data/pipeline/qc/integration/run_method/dataset~HLCA_highQC/file_id~preprocessing:filter:highQC\
-          /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~37055b39e0--label~scanvi_label/model"
-        layer: raw/X
+          /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~c4d95b3ea1--label~scanvi_label/model"
+          # 6544ac45dc
+        layer: X
         model_params:
           batch_key: dataset
+          freeze_dropout: true
         train_params:
-          max_epochs: 20
+          batch_size: 256
+          max_epochs: 50
+          early_stopping: true
+          early_stopping_monitor: elbo_validation
+          early_stopping_patience: 15
+          early_stopping_min_delta: 0.001
+          plan_kwargs:
+            reduce_lr_on_plateau: true
+            lr_patience: 8
+            lr_factor: 0.1
+            weight_decay: 0.0
       umap_colors:
-        - core_or_extension
         - file_id
         - ann_finest_level
         - assay
         - dataset
         - study
         - disease
+        - suspension_type
         - lung_condition
         - percent_mito
         - n_counts
         - n_genes
         - scrublet_score
+        - doubletdetection_score
         - qc_status
 
     merge:
@@ -166,8 +210,10 @@ DATASETS:
         obs: obs
         var: var
         obsm: obsm
-      dask: true 
+      keep_all_columns: false
+      dask: true
       backed: true
+      persist: true
       threads: 20
     
     clustering:
@@ -177,7 +223,7 @@ DATASETS:
       recompute_umap: true
       neighbors:
         use_rep: X_emb
-        n_neighbors: 50
+        n_neighbors: 30
         metric: euclidean # cosine
       resolutions: 0.5
       hierarchy:
@@ -185,8 +231,11 @@ DATASETS:
         3: 0.2
       umap_colors:
         - assay
+        - core_or_extension
         - dataset
         - study
+        - disease
+        - suspension_type
         - leiden_3
         - leiden_4
         - ann_finest_level
@@ -196,6 +245,7 @@ DATASETS:
         - lung_condition
         - sex
         - scrublet_score
+        - doubletdetection_score
         - n_genes
         - n_counts
         - percent_mito
@@ -206,3 +256,15 @@ DATASETS:
         query_key: leiden_0.5_3
         crosstab_kwargs:
           dropna: true
+
+    collect:
+      sep: --
+      same_slots:
+        - X
+        - layers
+      merge_slots:
+        - var
+        - obs
+        - obsm
+        - obsp
+        - uns

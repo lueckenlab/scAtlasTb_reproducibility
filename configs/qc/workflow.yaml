@@ -5,6 +5,8 @@ DATASETS:
       relabel:
         HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
       split_data: relabel
+      clustering: relabel
+      label_transfer: clustering
     
     relabel:
       rename_obsm_keys:
@@ -22,7 +24,25 @@ DATASETS:
           - single_cell_platform
           - anatomical_region_coarse
           - anatomical_region_highest_res
-          - Processing_site    
+          - Processing_site
+      selective_update:
+        base_column: ann_finest_level
+        new_column: ann_finest_level
+        update_map:
+          ann_finest_level:
+            'Unknown': # remove labels for "Unknown" cells
+
+    clustering:
+      recompute_umap: true
+      recompute_neighbors: true
+    
+    label_transfer:
+      majority_reference:
+        reference_key: ann_finest_level
+        query_key: leiden_0.5_3
+        crosstab_kwargs:
+          dropna: true
+
 
   HLCA_qc:
     input:
@@ -54,26 +74,17 @@ DATASETS:
     qc:
       counts: raw/X
       hue:
-        - ann_level_1
         - ann_level_2
         - ann_level_3
-        - ann_finest_level
-        - scanvi_label
+        # - ann_finest_level
         - assay
         - dataset
-        - study
         - donor_id
-        - subject_ID
-        - sample
         - fresh_or_frozen
-        - sex
-        - lung_condition
         - reference_genome
         - sequencing_platform
-        - smoking_status
-        - subject_type
-        - tissue_dissociation_protocol
         - scrublet_score
+        - doubletdetection_score
       scautoqc_metrics_params: configs/qc/scautoqc_params.tsv
       scautoqc_gaussian_kwargs:
         threshold: 0.1
@@ -81,13 +92,15 @@ DATASETS:
         - n_counts
         - n_genes
         - percent_mito
+        - scrublet_score
       # thresholds_file: configs/hlca/qc_thresholds.tsv
 
     merge:
       merge_strategy: inner
       dask: true
       backed: true
-      threads: 50
+      threads: 20
+      persist: true
 
 
   HLCA_highQC:
@@ -96,7 +109,6 @@ DATASETS:
         highQC: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
       preprocessing: filter
       integration: preprocessing
-      metrics: integration
     
     filter:
       keep_by_column:
@@ -114,8 +126,11 @@ DATASETS:
         lowQC: reference_mapping
         # must match the object of the model that is being used
         highQC: "data/pipeline/qc/integration/dataset~HLCA_highQC/file_id~preprocessing:filter:highQC\
-          /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~37055b39e0--label~scanvi_label--output_type~embed.zarr"
+          /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~c4d95b3ea1--label~scanvi_label--output_type~embed.zarr"
+          # old: 37055b39e0
       relabel: merge
+      clustering: relabel
+      label_transfer: clustering
 
     filter:
       keep_by_column:
@@ -125,12 +140,22 @@ DATASETS:
     reference_mapping:
       scarches:
         model: "data/pipeline/qc/integration/run_method/dataset~HLCA_highQC/file_id~preprocessing:filter:highQC\
-          /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~37055b39e0--label~scanvi_label/model"
-        layer: X
+          /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~c4d95b3ea1--label~scanvi_label/model"
+        layer: raw/X
         model_params:
           batch_key: dataset
+          freeze_dropout: true
         train_params:
-          max_epochs: 50
+          max_epochs: 500
+          early_stopping: true
+          early_stopping_monitor: elbo_validation
+          early_stopping_patience: 10
+          early_stopping_min_delta: 0.001
+          plan_kwargs:
+            reduce_lr_on_plateau: true
+            lr_patience: 8
+            lr_factor: 0.1
+            weight_decay: 0.0
       umap_colors:
         - file_id
         - ann_finest_level
@@ -143,37 +168,36 @@ DATASETS:
         - n_counts
         - n_genes
         - scrublet_score
+        - doubletdetection_score
         - qc_status
-    
+
     relabel:
       selective_update:
         base_column: ann_finest_level
-        new_column: ann_finest_level
+        new_column: ann_finest_level_hiqc
         update_map:
           file_id:
             'lowQC': # remove any annotations form low QC dataset
 
-  benchmark:
-    input:
-      preprocessing:
-        HLCA_map_to_highQC: data/pipeline/qc/relabel/dataset~HLCA_map_to_highQC/file_id~merge:HLCA_map_to_highQC.zarr
-        HLCA: data/pipeline/qc/relabel/dataset~prepare_data/file_id~HLCA.zarr
-      clustering: preprocessing
-      label_transfer: clustering
-      metrics: label_transfer
-      collect: metrics
-      marker_genes: collect
-
     clustering:
       recompute_umap: true
       recompute_neighbors: true
-
+    
     label_transfer:
       majority_reference:
-        reference_key: ann_finest_level
+        reference_key: ann_finest_level_hiqc
         query_key: leiden_0.5_3
         crosstab_kwargs:
           dropna: true
+
+  Benchmark_core:
+    input:
+      preprocessing:
+        HLCA: data/pipeline/qc/label_transfer/dataset~prepare_data/file_id~clustering:relabel:HLCA.zarr
+        HLCA_map_to_highQC: data/pipeline/qc/label_transfer/dataset~HLCA_map_to_highQC/file_id~clustering:relabel:merge:HLCA_map_to_highQC.zarr
+      metrics: preprocessing
+      collect: metrics
+      marker_genes: collect
 
     collect:
       sep: --
@@ -193,11 +217,11 @@ DATASETS:
       sample: sample
       layer: layers/normcounts
       groups:
-        - ann_finest_level--metrics:label_transfer:clustering:preprocessing:HLCA
-        - majority_reference--metrics:label_transfer:clustering:preprocessing:HLCA
-        - majority_reference--metrics:label_transfer:clustering:preprocessing:HLCA_map_to_highQC
-        - leiden_0.5_2--metrics:label_transfer:clustering:preprocessing:HLCA
-        - leiden_0.5_2--metrics:label_transfer:clustering:preprocessing:HLCA_map_to_highQC
+        - ann_finest_level
+        - majority_reference--metrics:preprocessing:HLCA
+        - majority_reference--metrics:preprocessing:HLCA_map_to_highQC
+        - leiden_0.5_2--metrics:preprocessing:HLCA
+        - leiden_0.5_2--metrics:preprocessing:HLCA_map_to_highQC
       marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
       rank_genes_groups:
         reference: rest
