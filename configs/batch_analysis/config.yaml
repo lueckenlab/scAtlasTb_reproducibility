@@ -1,164 +1,43 @@
 output_dir: data/pipeline/batch_analysis
 images: data/images/batch_analysis
 
-output_map:
-  preprocessing: data/pipeline/batch_analysis/preprocessing/dataset~{dataset}/file_id~{file_id}/preprocessed.zarr
-
 DATASETS:
   
   batch_analysis_all:
     input:
-      batch_analysis:
-        HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
-      split_data:
-        HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
-      marker_genes: split_data
-    
-    batch_analysis:
-      sample: sample,donor_id,tissue_level_2,tissue_level_3
-      n_permutations: 1000
-      threads: 20
-      highly_variable_genes:
-        n_top_genes: 2000
-      pca:
-      covariates:
-        - assay
-        - dataset
-        - study
-        - donor_id
-        - fresh_or_frozen
-        - suspension_type
-        - reference_genome
-        - tissue_dissociation_protocol
-        - tissue_level_2
-        - tissue_level_3
-        - tissue_sampling_method
-        # - sample
-        - total_counts
-        - log10_total_counts
-        - percent_mito
-        - 3'_or_5
-        - BMI
-        - cell_ranger_version"
-        - cell_viability_%
-        - ethnicity
-        - sample_type
-        - sequencing_platform
-        - sex
-        - single_cell_platform
-        - smoking_status
-        - subject_type
-        - subject_ID
-        - anatomical_region_coarse
-        - age_in_years
-        - original_celltype_ann
-        - Processing_site
-    
-    split_data:
-      key: ann_finest_level
-      values:
-        - Alveolar_macrophages
-        - AT2
-        - Suprabasal
-        - Basal_resting
-        - Goblet_(nasal)
-        - Multiciliated_(non-nasal)
-        - CD8_T_cells
-        - Monocyte-derived_Mph
-        - Club_(nasal)
-        - CD4_T_cells
-        - Classical_monocytes
-        - NK_cells
-        - EC_general_capillary
-        - Adventitial_fibroblasts
-        - Club_(non-nasal)
-        - DC2
-        - Non-classical_monocytes
-        - Alveolar_Mph_CCL3+
-        - AT1
-        - EC_arterial
-        - EC_aerocyte_capillary
-        - Mast_cells
-        - EC_venous_systemic
-        - EC_venous_pulmonary
-        - Alveolar_fibroblasts
-        - Multiciliated_(nasal)
-        - Interstitial_Mph_perivascular
-        - Hillock-like
-        - B_cells
-        - pre-TB_secretory
-        - Lymphatic_EC_mature
-        - Pericytes
-        - Smooth_muscle
-        - Plasma_cells
-        - Goblet_(bronchial)
-        - Peribronchial_fibroblasts
-        - SMG_serous_(nasal)
-        - AT0
-        - SMG_serous_(bronchial)
-        - SMG_duct
-        - Alveolar_Mph_MT-positive
-        - Alveolar_Mph_proliferating
-        - Deuterosomal
-        - AT2_proliferating
-        - Goblet_(subsegmental)
-        - Myofibroblasts
-        - Lymphatic_EC_differentiating
-        - Ionocyte
-        - SM_activated_stress_response
-        - Plasmacytoid_DCs
-        - SMG_mucous
-        - T_cells_proliferating
-        - Smooth_muscle_FAM83D+
-        - DC1
-        - Migratory_DCs
-        - Subpleural_fibroblasts
-        - Mesothelium
-        - Tuft
-        - Neuroendocrine
-        - Hematopoietic_stem_cells
-        - Lymphatic_EC_proliferating
+      relabel:
+        HLCA: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
+      preprocessing: relabel
+      batch_analysis: preprocessing
 
-    marker_genes:
-      layer: X
-      sample: sample
-      groups: dataset
-      # marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
-      rank_genes_groups:
-        reference: rest
-        method: wilcoxon
-      plot:
-        n_genes: 10
 
-  hlca_per_study:
+  batch_analysis_per_study:
     input:
       split_data:
-        HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
+        HLCA: data/pipeline/batch_analysis/relabel/dataset~batch_analysis_all/file_id~HLCA.zarr
       preprocessing: split_data
-      merge: preprocessing
-      sample_representation: split_data, merge
+      sample_representation: split_data
       batch_analysis: split_data, sample_representation
     
     split_data:
       key: study
       values:
         - Banovich_Kropski_2020
-        - Barbry_Leroy_2020
         - Jain_Misharin_2021
-        - Krasnow_2020
         - Lafyatis_Rojas_2019
-        - Meyer_2019
-        - Misharin_2021
-        - Misharin_Budinger_2018
-        - Nawijn_2021
         - Seibold_2020
-        - Teichmann_Meyer_2019
+        # - Barbry_Leroy_2020
+        # - Krasnow_2020
+        # - Meyer_2019
+        # - Misharin_2021
+        # - Misharin_Budinger_2018
+        # - Nawijn_2021
+        # - Teichmann_Meyer_2019
       dask: true
       backed: true
       threads: 50
     
     preprocessing:
-      raw_counts: X
       normalize:
         target_sum: 10_000
       highly_variable_genes:
@@ -168,240 +47,235 @@ DATASETS:
         - pca
       colors:
         - assay
-        - dataset
         - study
-        - ann_level_1
-        - ann_level_2
-        - ann_level_3
-        - ann_finest_level
-        - majority_reference
-        - qc_status
-        - lung_condition
-        - sex
-        - scrublet_score
-        - n_genes
+        - donor_id
+        - tissue_level_2
+        - tissue_level_3
+        - tissue_sampling_method
         - n_counts
+        - n_genes
         - percent_mito
-
+        - cell_ranger_version
+        - enrichment
+        - ensembl_release_reference_genome
+        - ethnicity
+        - sample_type
+        - sequencing_platform
+        - sex
+        - subject_type
+        - age_in_years
+        - age_range
+        - original_celltype_ann
+        - Processing_site
+        - BMI
+        - disease
+    
     merge:
       dask: true
       backed: true
       threads: 50
     
     sample_representation:
-      sample_key: sample,donor_id,tissue_level_2,tissue_level_3
       raw_counts: layers/counts
-      methods:
-        pseudobulk:
       colors:
         - assay
-        - dataset
         - study
         - donor_id
-        - fresh_or_frozen
-        - suspension_type
-        - reference_genome
-        - sequencing_platform
-        - tissue_dissociation_protocol
         - tissue_level_2
         - tissue_level_3
         - tissue_sampling_method
+        - n_counts
+        - n_genes
+        - percent_mito
+        - enrichment
+        - ensembl_release_reference_genome
+        - ethnicity
+        - sample_type
+        - sequencing_platform
+        - sex
+        - subject_type
+        - age_in_years
+        - age_range
+        - age_or_mean_of_age_range
+        - original_celltype_ann
+        - Processing_site
+        - BMI
+        - disease
+        - fresh_or_frozen
+        - reference_genome
+        - tissue_dissociation_protocol
     
     batch_analysis:
-      sample: sample,donor_id,tissue_level_2,tissue_level_3
-      n_permutations: 1000
-      threads: 50
+      normalize:
+        target_sum: 10_000
       highly_variable_genes:
         n_top_genes: 2000
       pca:
+      n_permutations: 100
       covariates:
         - assay
-        - dataset
         - study
         - donor_id
-        - fresh_or_frozen
-        - suspension_type
-        - reference_genome
-        - sequencing_platform
-        - tissue_dissociation_protocol
         - tissue_level_2
         - tissue_level_3
         - tissue_sampling_method
+        - n_counts
+        - n_genes
+        - percent_mito
+        - enrichment
+        - ensembl_release_reference_genome
+        - ethnicity
+        - sample_type
+        - sequencing_platform
+        - sex
+        - subject_type
+        - age_in_years
+        - age_range
+        - age_or_mean_of_age_range
+        - original_celltype_ann
+        - Processing_site
+        - BMI
+        - disease
+        - fresh_or_frozen
+        - reference_genome
+        - tissue_dissociation_protocol
 
 
-  batch_correction:
-    input:
-      preprocessing:
-        HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
-      integration: preprocessing
-      clustering: integration
-      label_transfer: clustering
-      marker_genes: label_transfer
-      metrics: marker_genes
-      collect: metrics
-      majority_voting: collect
+  batch_analysis_Banovich2020:
+    input: 
+      split_data:
+        Banovich_Kropski_2020: data/pipeline/batch_analysis/split_data/dataset~batch_analysis_per_study/file_id~HLCA/key~study/value~Banovich_Kropski_2020.zarr/
+      preprocessing: split_data
+      marker_genes: preprocessing
+
+    split_data:
+      key: ann_finest_level
+      values:
+            - Alveolar_Mph_CCL3+
+            - Alveolar_Mph_MT-positive
+            - Alveolar_Mph_proliferating
+            - Alveolar_fibroblasts
+            - AT0
+            - AT1
+            - AT2
+            - AT2_proliferating
+            - Basal_resting
+            - B_cells
+            - CD4_T_cells
+            - CD8_T_cells
+            - Classical_monocytes
+            - Club_(nasal)
+            - Club_(non-nasal)
+            - DC1
+            - DC2
+            - Deuterosomal
+            - EC_aerocyte_capillary
+            - EC_arterial
+            - EC_general_capillary
+            - EC_venous_pulmonary
+            - EC_venous_systemic
+            # - Fibroblasts
+            - Goblet_(bronchial)
+            - Goblet_(nasal)
+            - Goblet_(subsegmental)
+            - Hematopoietic_stem_cells
+            # - Hillock-like
+            - Interstitial_Mph_perivascular
+            - Ionocyte
+            - Lymphatic_EC_differentiating
+            - Lymphatic_EC_mature
+            - Lymphatic_EC_proliferating
+            - Mast_cells
+            - Mesothelium
+            - Migratory_DCs
+            - Monocyte-derived_Mph
+            - Myofibroblasts
+            - NK_cells
+            - Neuroendocrine
+            - Non-classical_monocytes
+            - Pericytes
+            - Peribronchial_fibroblasts
+            - Plasma_cells
+            - Plasmacytoid_DCs
+            - Smooth_muscle
+            - Smooth_muscle_FAM83D+
+            - SM_activated_stress_response
+            # - SMG_duct
+            # - SMG_mucous
+            # - SMG_serous_(bronchial)
+            # - SMG_serous_(nasal)
+            - Subpleural_fibroblasts
+            - Suprabasal
+            - T_cells_proliferating
+            # - Tuft
     
     preprocessing:
-      raw_counts: raw/X
       normalize:
         target_sum: 10_000
       highly_variable_genes:
         n_top_genes: 2000
       assemble:
-        - highly_variable_genes
-        - pca
+        - normalize
       colors:
         - assay
-        - dataset
         - study
-        - ann_level_1
-        - ann_level_2
-        - ann_level_3
-        - ann_finest_level
-        - majority_reference
-        - qc_status
-        - lung_condition
-        - sex
-        - scrublet_score
-        - n_genes
-        - n_counts
-        - percent_mito
-    
-    integration:
-      raw_counts: layers/counts
-      norm_counts: layers/normcounts
-      var_mask: highly_variable
-      neighbors:
-        n_neighbors: 100
-      batch:
-        - sample
-        - dataset
-      label: scanvi_label
-      output_types:
-        - embed
-      umap_colors:
-        - assay
-        - dataset
-        - study
-        - sample
         - donor_id
-        - ann_level_1
-        - ann_level_2
-        - ann_level_3
         - ann_finest_level
-        - majority_reference
-        - qc_status
-        - lung_condition
-        - sex
-        - scrublet_score
-        - n_genes
         - n_counts
+        - n_genes
         - percent_mito
-      methods:
-        harmony_pytorch:
-          n_comps: 50
-          scale: false
-        scvi:
-          n_layers: 2
-          n_latent: 30
-          encode_covariates: True
-          deeply_inject_covariates: False
-          use_layer_norm: both
-          use_batch_norm: none
-          gene_likelihood: nb
-          max_epochs: 100
-          early_stopping: true
-        scanvi:
-          n_layers: 2
-          n_latent: 30
-          encode_covariates: True
-          deeply_inject_covariates: False
-          use_layer_norm: both
-          use_batch_norm: none
-          gene_likelihood: nb
-          max_epochs: 100
-          early_stopping: true
-    
-    metrics:
-      unintegrated: layers/normcounts
-      raw_counts: layers/counts
-      var_mask: highly_variable
-      overwrite_file_id: true
-      weight_batch: 0.4
-      label: scanvi_label
-      batch:
-        - dataset
-        - sample
-      gene_sets:
-        Immune:
-          - CD53
-          - PTPRC
-          - CORO1A
-        Alveolar Mph:
-          - CYP27A1
-          - MARCO
-          - FABP4
-        T reg:
-          - FOXP3
-          - RTKN2
-        Epithelial:
-          - FXYD3
-          - EPCAM
-          - ELF3
-        pre-TB secretory:
-          - SCGB1A1 # from Tata paper
-          - SFTPB
-          - SCGB3A2
-          - RNASE1
-          - SFTA1P
-        AT0:
-          - SFTPB
-          - SCGB3A2
-          - IGFBP2
-          - SERPINF1
-          - TSPAN1
-          - SFTA2
-          - C11orf96
-        EC:
-          - CLDN5
-          - ECSCR
-          - CLEC14A
-        Stroma:
-          - COL1A2
-          - DCN
-          - MFAP4
-        Hematopoietic stem cells:
-          - CD53
-          - PTPRC
-          - CORO1A
-          - CRHBP
-          - SERPINE2
-          - MAP7
-      metrics:
-        - nmi
-        - ari
-        - cell_cycle
-        - clisi
-        - ilisi
-        - graph_connectivity
-        - isolated_label_f1
-        - pcr_comparison
-        - morans_i_genes
-        - kbet_pg
-    
+        - cell_ranger_version
+        - sequencing_platform
+
     marker_genes:
-      sample: donor_id
-      groups:
-        - majority_reference
-        - leiden_0.5_2
+      layers: X
+      groups: Processing_site
       marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
-      rank_genes_groups:
-        reference: rest
-        method: wilcoxon
       plot:
         n_genes: 10
-      layer: layers/normcounts
+
+
+  batch_correction:
+    input:
+      preprocessing:
+        HLCA: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
+      integration: preprocessing
+      clustering: integration
+      label_transfer: clustering
+      marker_genes: label_transfer
+      metrics: marker_genes
+      collect:
+        harmony_sample: data/pipeline/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=78b6990a8f.zarr
+        harmony_dataset: data/pipeline/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=2e34347366.zarr
+        scvi_sample: data/pipeline/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=d4ad6acea2.zarr
+        scvi_dataset: data/pipeline/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=614bb8eff1.zarr
+        scanvi_sample: data/pipeline/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=13184491cb.zarr
+        scanvi_dataset: data/pipeline/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=530135892d.zarr
+        hlcav1: data/pipeline/qc/metrics/dataset~benchmark/file_id~label_transfer:clustering:preprocessing:HLCA.zarr/
+      majority_voting: collect
+
+  batch_correction_pseudobulk:
+    input:
+      sample_representation:
+        HLCA: data/pipeline/batch_analysis/majority_voting/dataset~batch_correction/file_id~collect:batch_correction.zarr
+      collect:
+        harmony_sample: data/pipeline/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--harmony_sample.zarr
+        harmony_dataset: data/pipeline/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--harmony_dataset.zarr
+        scvi_sample: data/pipeline/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--scvi_sample.zarr
+        scvi_dataset: data/pipeline/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--scvi_dataset.zarr
+        scanvi_sample: data/pipeline/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--scanvi_sample.zarr
+        scanvi_dataset: data/pipeline/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--scanvi_dataset.zarr
     
+    sample_representation:
+      dask: false
+      use_rep:
+        - obsm/X_emb--harmony_sample
+        - obsm/X_emb--harmony_dataset
+        - obsm/X_emb--scvi_sample
+        - obsm/X_emb--scvi_dataset
+        - obsm/X_emb--scanvi_sample
+        - obsm/X_emb--scanvi_dataset
+      
     collect:
       sep: --
       same_slots:
@@ -411,44 +285,5 @@ DATASETS:
       merge_slots:
         - obs
         - obsm
-        - obsp
-        - uns
       skip_slots:
         - raw
-    
-    clustering:
-      algorithm: leiden
-      use_gpu: false
-      neighbors:
-        use_rep: X_emb
-        n_neighbors: 100
-        metric: euclidean
-      resolutions:
-        - 0.5
-      hierarchy:
-        2: 0.3
-        3: 0.2
-      umap_colors:
-        - assay
-        - dataset
-        - study
-        - ann_level_1
-        - ann_level_2
-        - ann_level_3
-        - ann_finest_level
-        - majority_reference
-        - qc_status
-        - lung_condition
-        - sex
-    
-    label_transfer:
-      majority_reference:
-        reference_key: ann_finest_level
-        query_key: leiden_0.5_3
-        crosstab_kwargs:
-          dropna: true
-    
-    majority_voting:
-      columns:
-        - majority_reference--.*
-

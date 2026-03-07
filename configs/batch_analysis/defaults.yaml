@@ -1,0 +1,308 @@
+defaults:
+
+  batch_analysis:
+    sample: sample
+    n_permutations: 100
+    max_threads: 20
+    covariates:
+      - assay
+      - dataset
+      - study
+      - donor_id
+      - fresh_or_frozen
+      - suspension_type
+      - reference_genome
+      - tissue_dissociation_protocol
+      - tissue_level_2
+      - tissue_level_3
+      - tissue_sampling_method
+      # - sample
+      - n_counts
+      - n_genes
+      - 3'_or_5
+      - cell_ranger_version
+      - enrichment
+      - ensembl_release_reference_genome
+      - ethnicity
+      - sample_type
+      - sex
+      - smoking_status
+      - subject_type
+      - anatomical_region_ccf_score
+      - anatomical_region_coarse
+      - anatomical_region_highest_res
+      - anatomical_region_level_1
+      - anatomical_region_level_2
+      - anatomical_region_level_3
+      - age_in_years
+      # bio covariates
+      - age_range
+      - BMI
+      - disease
+      - mixed_ancestry
+      - ann_finest_level
+      - developmental_stage
+      - lung_condition
+
+  sample_representation:
+    sample_key: sample
+    methods:
+      pseudobulk:
+    colors:
+      - age_or_mean_of_age_range
+      - age_range
+      - BMI
+      - disease
+      - mixed_ancestry
+      - smoking_status
+      - subject_type
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - ann_finest_level
+      - majority_consensus
+      - assay
+      - dataset
+      - study
+      - donor_id
+      - fresh_or_frozen
+      - suspension_type
+      - reference_genome
+      - sequencing_platform
+      - tissue_dissociation_protocol
+      - tissue_level_2
+      - tissue_level_3
+      - tissue_sampling_method
+      - sex
+      - developmental_stage
+      - lung_condition
+      - n_counts
+      - n_genes
+      - percent_mito
+      - cell_ranger_version
+      - enrichment
+      - ensembl_release_reference_genome
+      - ethnicity
+      - sample_type
+
+  preprocessing:
+    raw_counts: raw/X
+    normalize:
+      target_sum: 10_000
+    highly_variable_genes:
+      n_top_genes: 2000
+      batch_key: dataset
+      dask: false
+    assemble:
+      - normalize
+      - highly_variable_genes
+      - pca
+    colors:
+      - assay
+      - dataset
+      - study
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - ann_finest_level
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
+      - Processing_site
+      - sequencing_platform
+      - BMI
+      - smoking_status
+  
+  integration:
+    raw_counts: layers/counts
+    norm_counts: layers/normcounts
+    var_mask: highly_variable
+    neighbors:
+      n_neighbors: 50
+    batch:
+      - sample
+      - dataset
+    label: scanvi_label
+    output_types:
+      - embed
+    umap_colors:
+      - assay
+      - dataset
+      - study
+      - sample
+      - donor_id
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - ann_finest_level
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - scrublet_score
+      - n_genes
+      - n_counts
+      - percent_mito
+      - tissue_level_2
+      - tissue_level_3
+    methods:
+      harmony_pytorch:
+        n_comps: 50
+        scale: false
+      scvi:
+        n_layers: 2
+        n_latent: 128
+        encode_covariates: True
+        deeply_inject_covariates: False
+        use_layer_norm: both
+        use_batch_norm: none
+        gene_likelihood: nb
+        max_epochs: 100
+        early_stopping: true
+      scanvi:
+        n_layers: 2
+        n_latent: 30
+        encode_covariates: True
+        deeply_inject_covariates: False
+        use_layer_norm: both
+        use_batch_norm: none
+        gene_likelihood: nb
+        max_epochs: 100
+        early_stopping: true
+
+  metrics:
+    unintegrated: layers/normcounts
+    raw_counts: layers/counts
+    var_mask: highly_variable
+    overwrite_file_id: true
+    weight_batch: 0.4
+    label: scanvi_label
+    batch:
+      - dataset
+      - sample
+    gene_sets:
+      Immune:
+        - CD53
+        - PTPRC
+        - CORO1A
+      Alveolar Mph:
+        - CYP27A1
+        - MARCO
+        - FABP4
+      T reg:
+        - FOXP3
+        - RTKN2
+      Epithelial:
+        - FXYD3
+        - EPCAM
+        - ELF3
+      pre-TB secretory:
+        - SCGB1A1 # from Tata paper
+        - SFTPB
+        - SCGB3A2
+        - RNASE1
+        - SFTA1P
+      AT0:
+        - SFTPB
+        - SCGB3A2
+        - IGFBP2
+        - SERPINF1
+        - TSPAN1
+        - SFTA2
+        - C11orf96
+      EC:
+        - CLDN5
+        - ECSCR
+        - CLEC14A
+      Stroma:
+        - COL1A2
+        - DCN
+        - MFAP4
+      Hematopoietic stem cells:
+        - CD53
+        - PTPRC
+        - CORO1A
+        - CRHBP
+        - SERPINE2
+        - MAP7
+    metrics:
+      - nmi
+      - ari
+      # - cell_cycle
+      - clisi
+      - ilisi
+      - graph_connectivity
+      - isolated_label_f1
+      - pcr_comparison
+      - morans_i_genes
+      - kbet_pg
+  
+  marker_genes:
+    layer: layers/normcounts
+    sample: sample
+    groups:
+      - majority_reference
+      - leiden_0.5_2
+    marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
+    rank_genes_groups:
+      reference: rest
+      method: wilcoxon
+    plot:
+      n_genes: 10
+  
+  collect:
+    sep: --
+    same_slots:
+      - X
+      - var
+      - layers
+    merge_slots:
+      - obs
+      - obsm
+      - obsp
+      - uns
+    skip_slots:
+      - raw
+  
+  clustering:
+    algorithm: leiden
+    use_gpu: false
+    neighbors:
+      use_rep: X_emb
+      n_neighbors: 100
+      metric: euclidean
+    resolutions:
+      - 0.5
+    hierarchy:
+      2: 0.3
+      3: 0.2
+    umap_colors:
+      - assay
+      - dataset
+      - study
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - ann_finest_level
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - tissue_level_2
+      - tissue_level_3
+  
+  label_transfer:
+    majority_reference:
+      reference_key: ann_finest_level
+      query_key: leiden_0.5_3
+      crosstab_kwargs:
+        dropna: true
+  
+  majority_voting:
+      columns:
+        - majority_reference--.*
