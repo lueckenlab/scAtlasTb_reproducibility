@@ -1,6 +1,6 @@
 DATASETS:
 
-  HLCA_plasma_qc:
+  HLCA_immune_subset:
     input:
       filter: 
         HLCA: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
@@ -17,7 +17,7 @@ DATASETS:
       selective_update:
         base_column: ann_finest_level
         new_column: ann_plasma
-        update_map:
+        update_map:  # remove annotations for any cells other than plasma cells
           ann_level_1:
             Immune: 
           ann_finest_level:
@@ -39,16 +39,14 @@ DATASETS:
         - ann_plasma
         - assay
         - dataset
-        - study
+        # - study
         - donor_id
         - fresh_or_frozen
         - sex
-        - lung_condition
+        # - lung_condition
         - sequencing_platform
-        - smoking_status
-        - subject_type
-        - tissue_dissociation_protocol
-        - tissue_level_2
+        # - smoking_status
+        # - subject_type
         - scrublet_score
       scautoqc_metrics:
         - n_counts
