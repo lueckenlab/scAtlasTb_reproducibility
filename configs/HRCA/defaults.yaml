@@ -92,8 +92,13 @@ defaults:
     normalize:
       target_sum: 10_000
     highly_variable_genes:
-      n_top_genes: 2000
-      batch_key: sample_id
+      n_top_genes:
+        - 2000
+        - 1000
+        - 3000
+      batch_key:
+        - sample_id
+        - 
       dask: false
     assemble:
       - highly_variable_genes
