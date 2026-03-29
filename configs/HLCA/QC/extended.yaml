@@ -80,7 +80,7 @@ DATASETS:
         - n_genes
         - percent_mito
         - scrublet_score
-      scautoqc_metrics_params: configs/HLCA/scautoqc_params.tsv
+      scautoqc_metrics_params: configs/HLCA/QC/scautoqc_params.tsv
 
     merge:
       slots:

@@ -133,7 +133,7 @@ DATASETS:
         - tissue_dissociation_protocol
         - tissue_level_2
         - scrublet_score
-      scautoqc_metrics_params: configs/HLCA/scautoqc_params.tsv
+      scautoqc_metrics_params: configs/HLCA/QC/scautoqc_params.tsv
       scautoqc_gaussian_kwargs:
         threshold: 0.05
       scautoqc_metrics:

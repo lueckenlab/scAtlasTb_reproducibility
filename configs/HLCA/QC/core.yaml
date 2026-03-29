@@ -73,7 +73,7 @@ DATASETS:
         - sequencing_platform
         - scrublet_score
         - doubletdetection_score
-      scautoqc_metrics_params: configs/HLCA/scautoqc_params.tsv
+      scautoqc_metrics_params: configs/HLCA/QC/scautoqc_params.tsv
       scautoqc_gaussian_kwargs:
         threshold: 0.1
       scautoqc_metrics:
