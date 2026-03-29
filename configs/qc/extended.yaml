@@ -155,11 +155,15 @@ DATASETS:
       merge:
         extended: reference_mapping
         highQC: relabel
-      clustering: merge
-      label_transfer: clustering
-      collect:
-        highQC_extended: label_transfer
+      preprocessing: merge
+      clustering: 
+        highQC_extended: preprocessing
         HLCAv1: data/pipeline/qc/relabel/dataset~HLCA_extended_qc/file_id~extended.zarr # original core + extended dataset
+      label_transfer: clustering
+      collect: label_transfer
+      split_data: collect
+      majority_voting: collect, split_data
+      marker_genes: majority_voting
     
     relabel:
       constant_columns:
@@ -216,6 +220,11 @@ DATASETS:
       persist: true
       threads: 20
     
+    preprocessing:
+      raw_counts: X
+      assemble:
+        - normalize
+
     clustering:
       algorithm: leiden
       use_gpu: false
@@ -268,3 +277,29 @@ DATASETS:
         - obsm
         - obsp
         - uns
+
+    split_data:
+      key: core_or_extension
+      values:
+        - core
+        - extension
+    
+    majority_voting:
+      columns:
+        - majority_reference--.*
+
+    marker_genes:
+      sample: sample
+      layer: layers/normcounts
+      groups:
+        - ann_finest_level
+        - majority_consensus
+        - majority_reference--label_transfer:clustering:highQC_extended
+        - majority_reference--label_transfer:clustering:HLCAv1
+      marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
+      rank_genes_groups:
+        reference: rest
+        method: wilcoxon
+      plot:
+        n_genes: 5
+        
