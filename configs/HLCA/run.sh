@@ -7,11 +7,11 @@ snakemake \
   --profile .profiles/czbiohub \
   --configfile \
     .profiles/czbiohub/cluster_config.yaml \
-    configs/global.yaml  \
-    configs/hlca/defaults.yaml  \
-    configs/hlca/gene_sets.yaml  \
-    configs/hlca/load_data.yaml \
-    configs/hlca/qc.yaml \
-    configs/hlca/integration.yaml \
+    configs/global.yaml \
+    configs/HLCA/gene_sets.yaml \
+    configs/HLCA/global.yaml \
+    configs/HLCA/core.yaml \
+    configs/HLCA/extended.yaml \
+    configs/HLCA/followup_qc.yaml \
   --snakefile $pipeline/workflow/Snakefile \
     $@
