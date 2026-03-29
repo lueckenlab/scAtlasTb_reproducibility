@@ -12,6 +12,5 @@ snakemake \
     configs/HLCA/global.yaml \
     configs/HLCA/core.yaml \
     configs/HLCA/extended.yaml \
-    configs/HLCA/followup_qc.yaml \
   --snakefile $pipeline/workflow/Snakefile \
     $@

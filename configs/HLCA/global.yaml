@@ -1,10 +1,15 @@
-output_dir: data/pipeline/qc
-images: data/images/qc
+output_dir: data/pipeline/HLCAv1/QC
+images: data/images/HLCAv1/QC
 
 defaults:
+
+  relabel:
+    threads: 20
+
   merge:
     dask: true 
     backed: true
+    persist: true
     threads: 20
 
   split_data:
@@ -28,7 +33,7 @@ defaults:
   doublets:
     counts: raw/X
     batch: sample
-    chunk_size: 20000
+    chunk_size: 100_000
     methods:
       - scrublet
       - doubletdetection
@@ -40,7 +45,7 @@ defaults:
     highly_variable_genes:
       n_top_genes: 2000
       batch_key: dataset
-      dask: false
+      dask: true
     assemble:
       - normalize
       - highly_variable_genes
@@ -117,16 +122,6 @@ defaults:
           weight_decay: 0.0
       
       scanvi:
-        # n_layers: 2
-        # n_latent: 30
-        # encode_covariates: True
-        # deeply_inject_covariates: False
-        # use_layer_norm: both
-        # use_batch_norm: none
-        # gene_likelihood: nb
-        # max_epochs: 100
-        # early_stopping: true
-
         # model paramters
         n_layers: 2
         n_latent: 30
@@ -174,6 +169,7 @@ defaults:
       3: 0.2
     umap_colors:
       - file_id
+      - core_or_extension
       - assay
       - dataset
       - study
@@ -193,6 +189,9 @@ defaults:
       - n_genes
       - n_counts
       - percent_mito
+      - leiden_3
+      - leiden_4
+      - majority_reference
 
   label_transfer:
     majority_reference:
@@ -205,7 +204,9 @@ defaults:
     raw_counts: layers/counts
     unintegrated: layers/normcounts
     var_mask: highly_variable
-    # overwrite_file_id: true
+    clustering:
+      precomputed_key: leiden_0.5_3
+    parse_file_id: true
     weight_batch: 0.4
     use_scaled: false
     label: ann_finest_level
@@ -272,3 +273,13 @@ defaults:
       # - pcr
       # - pcr_genes
       - kbet_pg
+
+  marker_genes:
+    sample: sample
+    layer: layers/normcounts
+    marker_genes: immune, epithelial, endothelial, stroma, other
+    rank_genes_groups:
+      reference: rest
+      method: wilcoxon
+    plot:
+      n_genes: 5

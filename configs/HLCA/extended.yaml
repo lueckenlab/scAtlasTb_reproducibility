@@ -1,9 +1,9 @@
 DATASETS:
 
-  HLCA_extended_qc:
+  QC_extended:
     input:
       relabel:
-        extended: data/pipeline/load_data/download/HLCAv1_extended.h5ad
+        HLCAv1: data/pipeline/load_data/download/HLCAv1_extended.h5ad
       filter: relabel
       split_data: filter
       doublets: split_data
@@ -80,6 +80,7 @@ DATASETS:
         - n_genes
         - percent_mito
         - scrublet_score
+      scautoqc_metrics_params: configs/HLCA/scautoqc_params.tsv
 
     merge:
       slots:
@@ -91,90 +92,41 @@ DATASETS:
       backed: true
       threads: 50
       persist: true
-
-  extended:
-    input:
-      clustering:
-        extended: data/pipeline/qc/relabel/dataset~HLCA_extended_qc/file_id~extended.zarr
-      label_transfer: clustering
-    clustering:
-      recompute_umap: true
-      recompute_neighbors: true
   
-  extended_only:
+
+  HLCAv1_extended:
+
     input:
-      clustering:
-        extended: data/pipeline/qc/merge/dataset~HLCA_extended_qc.zarr
-      label_transfer: clustering
-    clustering:
-      recompute_umap: false
-      recompute_neighbors: true
-
-  de_novo_extended:
-    input:
-      preprocessing:
-        # original core + extended dataset
-        extended: data/pipeline/qc/relabel/dataset~HLCA_extended_qc/file_id~extended.zarr
-      integration: preprocessing
-      clustering: integration
-      label_transfer: clustering
-
-    preprocessing:
-      highly_variable_genes:
-        n_top_genes: 2000
-        batch_key: dataset
-        dask: true
-    
-    integration:
-      methods:
-        scvi:
-          n_layers: 2
-          n_latent: 30
-          encode_covariates: true
-          deeply_inject_covariates: false
-          use_layer_norm: both
-          use_batch_norm: none
-          gene_likelihood: nb
-          max_epochs: 100
-          early_stopping: true
-          early_stopping_monitor: elbo_validation
-          early_stopping_patience: 10
-          early_stopping_min_delta: 0.0
-          plan_kwargs:
-            reduce_lr_on_plateau: true
-            lr_patience: 8
-            lr_factor: 0.1
-            weight_decay: 0.0
-
-  map_extended:
-    input:      
+      # query-ref mapping to highQC reference
       reference_mapping:
-        extended: data/pipeline/qc/merge/dataset~HLCA_extended_qc.zarr
-      relabel:
-        highQC: data/pipeline/qc/relabel/dataset~HLCA_map_to_highQC/file_id~merge:HLCA_map_to_highQC.zarr
+        QC: data/pipeline/HLCAv1/QC/merge/dataset~QC_extended.zarr
       merge:
         extended: reference_mapping
-        highQC: relabel
-      preprocessing: merge
-      clustering: 
-        highQC_extended: preprocessing
-        HLCAv1: data/pipeline/qc/relabel/dataset~HLCA_extended_qc/file_id~extended.zarr # original core + extended dataset
+        highQC: data/pipeline/HLCAv1/QC/collect/dataset~highQC.zarr
+
+      # original core + extended dataset
+      preprocessing:
+        HLCAv1: data/pipeline/HLCAv1/QC/relabel/dataset~QC_extended/file_id~HLCAv1.zarr
+      integration: preprocessing # de-novo integration
+      
+      # downtsream analyses
+      clustering:
+        HLCAv1: preprocessing
+        highQC: merge
+        deNovo: integration
+      metrics: clustering
       label_transfer: clustering
       collect: label_transfer
-      split_data: collect
-      majority_voting: collect, split_data
-      marker_genes: majority_voting
-    
-    relabel:
-      constant_columns:
-        core_or_extension: core
+      majority_voting: collect
+
+
+    ## module configuration: how each module is run ##
 
     reference_mapping:
       threads: 16
       scarches:
-        model: "data/pipeline/qc/integration/run_method/dataset~HLCA_highQC/file_id~preprocessing:filter:highQC\
+        model: "data/pipeline/HLCAv1/QC/integration/run_method/dataset~highQC/file_id~highQC\
           /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~c4d95b3ea1--label~scanvi_label/model"
-          # 6544ac45dc
         layer: X
         model_params:
           batch_key: dataset
@@ -215,56 +167,10 @@ DATASETS:
         var: var
         obsm: obsm
       keep_all_columns: false
-      dask: true
-      backed: true
-      persist: true
-      threads: 20
-    
-    preprocessing:
-      raw_counts: X
-      assemble:
-        - normalize
 
     clustering:
-      algorithm: leiden
-      use_gpu: false
       recompute_neighbors: true
       recompute_umap: true
-      neighbors:
-        use_rep: X_emb
-        n_neighbors: 30
-        metric: euclidean # cosine
-      resolutions: 0.5
-      hierarchy:
-        2: 0.3
-        3: 0.2
-      umap_colors:
-        - assay
-        - core_or_extension
-        - dataset
-        - study
-        - disease
-        - suspension_type
-        - leiden_3
-        - leiden_4
-        - ann_finest_level
-        - scanvi_label
-        - majority_reference
-        - qc_status
-        - lung_condition
-        - sex
-        - scrublet_score
-        - doubletdetection_score
-        - n_genes
-        - n_counts
-        - percent_mito
-
-    label_transfer:
-      majority_reference:
-        reference_key: ann_finest_level
-        query_key: leiden_0.5_3
-        crosstab_kwargs:
-          dropna: true
 
     collect:
       sep: --
@@ -277,29 +183,15 @@ DATASETS:
         - obsm
         - obsp
         - uns
-
-    split_data:
-      key: core_or_extension
-      values:
-        - core
-        - extension
     
     majority_voting:
       columns:
         - majority_reference--.*
 
     marker_genes:
-      sample: sample
-      layer: layers/normcounts
       groups:
         - ann_finest_level
         - majority_consensus
-        - majority_reference--label_transfer:clustering:highQC_extended
         - majority_reference--label_transfer:clustering:HLCAv1
-      marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
-      rank_genes_groups:
-        reference: rest
-        method: wilcoxon
-      plot:
-        n_genes: 5
-        
+        - majority_reference--label_transfer:clustering:highQC
+        - majority_reference--label_transfer:clustering:deNovo

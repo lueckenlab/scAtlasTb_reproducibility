@@ -3,10 +3,9 @@ DATASETS:
   prepare_data:
     input:
       relabel:
-        HLCA: data/pipeline/load_data/download/HLCAv1_core.h5ad
+        HLCAv1: data/pipeline/load_data/download/HLCAv1_core.h5ad
+      preprocessing: relabel
       split_data: relabel
-      clustering: relabel
-      label_transfer: clustering
     
     relabel:
       rename_obsm_keys:
@@ -32,32 +31,21 @@ DATASETS:
           ann_finest_level:
             'Unknown': # remove labels for "Unknown" cells
 
-    clustering:
-      recompute_umap: true
-      recompute_neighbors: true
-    
-    label_transfer:
-      majority_reference:
-        reference_key: ann_finest_level
-        query_key: leiden_0.5_3
-        crosstab_kwargs:
-          dropna: true
 
-
-  HLCA_qc:
+  QC:
     input:
       doublets:
-        Banovich_Kropski_2020: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Banovich_Kropski_2020.zarr
-        Barbry_Leroy_2020: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Barbry_Leroy_2020.zarr
-        Jain_Misharin_2021: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Jain_Misharin_2021.zarr
-        Krasnow_2020: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Krasnow_2020.zarr
-        Lafyatis_Rojas_2019: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Lafyatis_Rojas_2019.zarr
-        Meyer_2019: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Meyer_2019.zarr
-        Misharin_2021: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Misharin_2021.zarr
-        Misharin_Budinger_2018: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Misharin_Budinger_2018.zarr
-        Nawijn_2021: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Nawijn_2021.zarr
-        Seibold_2020: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Seibold_2020.zarr
-        Teichmann_Meyer_2019: data/pipeline/qc/split_data/dataset~prepare_data/file_id~relabel:HLCA/key~study/value~Teichmann_Meyer_2019.zarr
+        Banovich_Kropski_2020: data/pipeline/HLCAv1/QC/split_data/dataset~prepare_data/file_id~relabel:HLCAv1/key~study/value~Banovich_Kropski_2020.zarr
+        Barbry_Leroy_2020: data/pipeline/HLCAv1/QC/split_data/dataset~prepare_data/file_id~relabel:HLCAv1/key~study/value~Barbry_Leroy_2020.zarr
+        Jain_Misharin_2021: data/pipeline/HLCAv1/QC/split_data/dataset~prepare_data/file_id~relabel:HLCAv1/key~study/value~Jain_Misharin_2021.zarr
+        Krasnow_2020: data/pipeline/HLCAv1/QC/split_data/dataset~prepare_data/file_id~relabel:HLCAv1/key~study/value~Krasnow_2020.zarr
+        Lafyatis_Rojas_2019: data/pipeline/HLCAv1/QC/split_data/dataset~prepare_data/file_id~relabel:HLCAv1/key~study/value~Lafyatis_Rojas_2019.zarr
+        Meyer_2019: data/pipeline/HLCAv1/QC/split_data/dataset~prepare_data/file_id~relabel:HLCAv1/key~study/value~Meyer_2019.zarr
+        Misharin_2021: data/pipeline/HLCAv1/QC/split_data/dataset~prepare_data/file_id~relabel:HLCAv1/key~study/value~Misharin_2021.zarr
+        Misharin_Budinger_2018: data/pipeline/HLCAv1/QC/split_data/dataset~prepare_data/file_id~relabel:HLCAv1/key~study/value~Misharin_Budinger_2018.zarr
+        Nawijn_2021: data/pipeline/HLCAv1/QC/split_data/dataset~prepare_data/file_id~relabel:HLCAv1/key~study/value~Nawijn_2021.zarr
+        Seibold_2020: data/pipeline/HLCAv1/QC/split_data/dataset~prepare_data/file_id~relabel:HLCAv1/key~study/value~Seibold_2020.zarr
+        Teichmann_Meyer_2019: data/pipeline/HLCAv1/QC/split_data/dataset~prepare_data/file_id~relabel:HLCAv1/key~study/value~Teichmann_Meyer_2019.zarr
       split_data: doublets
       qc: split_data
       merge: qc
@@ -85,7 +73,7 @@ DATASETS:
         - sequencing_platform
         - scrublet_score
         - doubletdetection_score
-      scautoqc_metrics_params: configs/qc/scautoqc_params.tsv
+      scautoqc_metrics_params: configs/HLCA/scautoqc_params.tsv
       scautoqc_gaussian_kwargs:
         threshold: 0.1
       scautoqc_metrics:
@@ -93,7 +81,7 @@ DATASETS:
         - n_genes
         - percent_mito
         - scrublet_score
-      # thresholds_file: configs/hlca/qc_thresholds.tsv
+      # thresholds_file: configs/HLCA/qc_thresholds.tsv
 
     merge:
       merge_strategy: inner
@@ -103,45 +91,88 @@ DATASETS:
       persist: true
 
 
-  HLCA_highQC:
-    input:
-      filter:
-        highQC: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
-      preprocessing: filter
-      integration: preprocessing
+  highQC:
     
-    filter:
-      keep_by_column:
-        qc_status:
-          - passed
+    ## workflow configuration: what is being run ##
 
-
-  HLCA_map_to_highQC:
     input:
-      filter:
-        lowQC: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
-      reference_mapping: filter
+      # split lowQC and highQC cells
+      split_data:
+        All: data/pipeline/HLCAv1/QC/merge/dataset~QC.zarr
+      preprocessing: split_data
+
+      # de novo integration of highQC data only
+      integration: 
+        highQC: data/pipeline/HLCAv1/QC/preprocessing/dataset~highQC/file_id~split_data:All--split_data_key=study--split_data_value=passed.zarr
+      
+      # map low QC back to high QC reference
+      reference_mapping:
+        lowQC: data/pipeline/HLCAv1/QC/preprocessing/dataset~highQC/file_id~split_data:All--split_data_key=study--split_data_value=failed.zarr
       merge:
         # low QC must go first, otherwise gets overwritten by high QC data
         lowQC: reference_mapping
-        # must match the object of the model that is being used
-        highQC: "data/pipeline/qc/integration/dataset~HLCA_highQC/file_id~preprocessing:filter:highQC\
-          /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~c4d95b3ea1--label~scanvi_label--output_type~embed.zarr"
-          # old: 37055b39e0
+        highQC: integration
+      
+      # downstream analyses
       relabel: merge
       clustering: relabel
+      metrics: clustering
       label_transfer: clustering
+      collect:
+        HLCAv1: data/pipeline/HLCAv1/QC/preprocessing/dataset~prepare_data/file_id~relabel:HLCAv1.zarr  # must go first so that order of obs matches
+        highQC: label_transfer
+      marker_genes: collect
 
-    filter:
-      keep_by_column:
-        qc_status:
-          - failed
     
+    ## module configuration: how each module is run ##
+    
+    split_data:
+      value: qc_status
+      values:
+        - failed
+        - passed
+    
+    integration:
+      methods:
+        scanvi:
+          # model parameters
+          n_layers: 2
+          n_latent: 30
+          encode_covariates: true
+          deeply_inject_covariates: false
+          use_layer_norm: both
+          use_batch_norm: none
+          gene_likelihood: nb
+          
+          # scVI training parameters
+          max_epochs: 500
+          early_stopping: true
+          early_stopping_monitor: elbo_validation
+          early_stopping_patience: 10
+          early_stopping_min_delta: 0.0
+          plan_kwargs:
+            reduce_lr_on_plateau: true
+            lr_patience: 8
+            lr_factor: 0.1
+            weight_decay: 0.0
+          
+          # scANVI parameters
+          scanvi_max_epochs: 200
+          scanvi_early_stopping: true
+          scanvi_early_stopping_monitor: validation_accuracy
+          scanvi_early_stopping_patience: 10
+          scanvi_early_stopping_min_delta: 0.001
+          scanvi_plan_kwargs:
+            reduce_lr_on_plateau: true
+            lr_patience: 8
+            lr_factor: 0.1
+            weight_decay: 0.0
+
     reference_mapping:
       scarches:
-        model: "data/pipeline/qc/integration/run_method/dataset~HLCA_highQC/file_id~preprocessing:filter:highQC\
+        model: "data/pipeline/HLCAv1/QC/integration/run_method/dataset~highQC/file_id~highQC\
           /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~c4d95b3ea1--label~scanvi_label/model"
-        layer: raw/X
+        layer: layers/counts
         model_params:
           batch_key: dataset
           freeze_dropout: true
@@ -171,7 +202,14 @@ DATASETS:
         - doubletdetection_score
         - qc_status
 
+    merge:
+      slots:
+        obs: obs
+        obsm: obsm
+
     relabel:
+      constant_columns:
+        core_or_extension: core
       selective_update:
         base_column: ann_finest_level
         new_column: ann_finest_level_hiqc
@@ -190,41 +228,19 @@ DATASETS:
         crosstab_kwargs:
           dropna: true
 
-  Benchmark_core:
-    input:
-      preprocessing:
-        HLCA: data/pipeline/qc/label_transfer/dataset~prepare_data/file_id~clustering:relabel:HLCA.zarr
-        HLCA_map_to_highQC: data/pipeline/qc/label_transfer/dataset~HLCA_map_to_highQC/file_id~clustering:relabel:merge:HLCA_map_to_highQC.zarr
-      metrics: preprocessing
-      collect: metrics
-      marker_genes: collect
-
     collect:
       sep: --
       same_slots:
         - X
         - var
         - layers
+        - raw
       merge_slots:
         - obs
         - obsm
-        - obsp
-        - uns
-      skip_slots:
-        - raw
 
     marker_genes:
-      sample: sample
-      layer: layers/normcounts
       groups:
         - ann_finest_level
-        - majority_reference--metrics:preprocessing:HLCA
-        - majority_reference--metrics:preprocessing:HLCA_map_to_highQC
-        - leiden_0.5_2--metrics:preprocessing:HLCA
-        - leiden_0.5_2--metrics:preprocessing:HLCA_map_to_highQC
-      marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
-      rank_genes_groups:
-        reference: rest
-        method: wilcoxon
-      plot:
-        n_genes: 5
+        - majority_reference--HLCAv1
+        - majority_reference--highQC

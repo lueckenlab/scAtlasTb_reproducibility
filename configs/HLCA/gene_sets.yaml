@@ -1,5 +1,5 @@
 MARKER_GENES:
-  HLCA_immune:
+  immune:
     # Immune:
     #   - CD53
     #   - PTPRC
@@ -101,7 +101,7 @@ MARKER_GENES:
       - TK1
       - MKI67
 
-  HLCA_epithelial:
+  epithelial:
     Epithelial:
       - FXYD3
       - EPCAM
@@ -185,7 +185,7 @@ MARKER_GENES:
       - IGF1
       - CLCNKB
 
-  HLCA_endothelial:
+  endothelial:
     EC:
       - CLDN5
       - ECSCR
@@ -230,7 +230,7 @@ MARKER_GENES:
       - MKI67
       - TOP2A
 
-  HLCA_stroma:
+  stroma:
     Stroma:
       - COL1A2
       - DCN
@@ -308,7 +308,7 @@ MARKER_GENES:
       - UPK3B
       - ITLN1
 
-  HLCA_other:
+  other:
     Hematopoietic stem cells:
       - CD53
       - PTPRC

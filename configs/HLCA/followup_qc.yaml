@@ -1,9 +1,9 @@
 DATASETS:
 
-  HLCA_immune_subset:
+  follow_up_immune:
     input:
       filter: 
-        HLCA: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
+        HLCAv1: data/pipeline/HLCAv1/QC/relabel/dataset~prepare_data/file_id~HLCAv1.zarr
       relabel: filter
       split_data: relabel
       qc: relabel, split_data
@@ -54,10 +54,10 @@ DATASETS:
         - percent_mito
 
 
-  HLCA_AT2_qc:
+  follow_up_AT2:
     input:
       filter:
-        HLCA: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
+        HLCAv1: data/pipeline/HLCAv1/QC/relabel/dataset~prepare_data/file_id~HLCAv1.zarr
       relabel: filter
       split_data: relabel
       qc: relabel, split_data
@@ -133,7 +133,7 @@ DATASETS:
         - tissue_dissociation_protocol
         - tissue_level_2
         - scrublet_score
-      scautoqc_metrics_params: configs/qc/scautoqc_params.tsv
+      scautoqc_metrics_params: configs/HLCA/scautoqc_params.tsv
       scautoqc_gaussian_kwargs:
         threshold: 0.05
       scautoqc_metrics:
