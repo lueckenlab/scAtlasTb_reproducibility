@@ -1,3 +1,6 @@
+output_dir: data/pipeline/HLCAv1/batch_analysis
+images: data/images/HLCAv1/batch_analysis
+
 defaults:
 
   batch_analysis:
@@ -49,6 +52,8 @@ defaults:
     methods:
       pseudobulk:
     colors:
+      - Processing_site
+      - age_in_years
       - age_or_mean_of_age_range
       - age_range
       - BMI

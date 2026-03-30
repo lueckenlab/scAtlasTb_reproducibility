@@ -1,0 +1,107 @@
+DATASETS:
+
+  Reintegration_new_batch_covariate:
+
+    input:
+      relabel:
+        HLCA: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
+        # HLCA: data/pipeline/HLCAv1/QC/merge/dataset~QC.zarr
+      preprocessing: relabel
+      integration: preprocessing
+      
+      # per cell type effect of Processing_site
+      filter: preprocessing
+      split_data: filter
+      marker_genes: split_data
+
+    relabel:
+      selective_update:
+        base_column: dataset
+        new_column: dataset_reintegration
+        query: "dataset == 'Banovich_Kropski_2020'"
+        update_map:
+          Processing_site:
+            TGen: Banovich_Kropski_2020_TGen
+            VUMC: Banovich_Kropski_2020_VUMC
+
+    preprocessing:
+      highly_variable_genes:
+        n_top_genes: 2000
+        batch_key: dataset_reintegration
+        dask: true
+
+    integration:
+      batch: dataset_reintegration
+
+    filter:
+      keep_by_column:
+        dataset: 'Banovich_Kropski_2020'
+
+    split_data:
+      key: ann_finest_level
+      values:
+            - Alveolar_Mph_CCL3+
+            - Alveolar_Mph_MT-positive
+            - Alveolar_Mph_proliferating
+            - Alveolar_fibroblasts
+            - AT0
+            - AT1
+            - AT2
+            - AT2_proliferating
+            - Basal_resting
+            - B_cells
+            - CD4_T_cells
+            - CD8_T_cells
+            - Classical_monocytes
+            - Club_(nasal)
+            - Club_(non-nasal)
+            - DC1
+            - DC2
+            - Deuterosomal
+            - EC_aerocyte_capillary
+            - EC_arterial
+            - EC_general_capillary
+            - EC_venous_pulmonary
+            - EC_venous_systemic
+            # - Fibroblasts
+            - Goblet_(bronchial)
+            - Goblet_(nasal)
+            - Goblet_(subsegmental)
+            - Hematopoietic_stem_cells
+            # - Hillock-like
+            - Interstitial_Mph_perivascular
+            - Ionocyte
+            - Lymphatic_EC_differentiating
+            - Lymphatic_EC_mature
+            - Lymphatic_EC_proliferating
+            - Mast_cells
+            - Mesothelium
+            - Migratory_DCs
+            - Monocyte-derived_Mph
+            - Myofibroblasts
+            - NK_cells
+            - Neuroendocrine
+            - Non-classical_monocytes
+            - Pericytes
+            - Peribronchial_fibroblasts
+            - Plasma_cells
+            - Plasmacytoid_DCs
+            - Smooth_muscle
+            - Smooth_muscle_FAM83D+
+            - SM_activated_stress_response
+            # - SMG_duct
+            # - SMG_mucous
+            # - SMG_serous_(bronchial)
+            # - SMG_serous_(nasal)
+            - Subpleural_fibroblasts
+            - Suprabasal
+            - T_cells_proliferating
+            # - Tuft
+    
+    marker_genes:
+      layers: X
+      groups: Processing_site
+      marker_genes: immune, epithelial, endothelial, stroma, other
+      plot:
+        n_genes: 10
+

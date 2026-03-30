@@ -1,6 +1,3 @@
-output_dir: data/pipeline/batch_analysis
-images: data/images/batch_analysis
-
 DATASETS:
   
   batch_analysis_all:
@@ -77,33 +74,6 @@ DATASETS:
     
     sample_representation:
       raw_counts: layers/counts
-      colors:
-        - assay
-        - study
-        - donor_id
-        - tissue_level_2
-        - tissue_level_3
-        - tissue_sampling_method
-        - n_counts
-        - n_genes
-        - percent_mito
-        - enrichment
-        - ensembl_release_reference_genome
-        - ethnicity
-        - sample_type
-        - sequencing_platform
-        - sex
-        - subject_type
-        - age_in_years
-        - age_range
-        - age_or_mean_of_age_range
-        - original_celltype_ann
-        - Processing_site
-        - BMI
-        - disease
-        - fresh_or_frozen
-        - reference_genome
-        - tissue_dissociation_protocol
     
     batch_analysis:
       normalize:
@@ -141,100 +111,6 @@ DATASETS:
         - tissue_dissociation_protocol
 
 
-  batch_analysis_Banovich2020:
-    input: 
-      split_data:
-        Banovich_Kropski_2020: data/pipeline/batch_analysis/split_data/dataset~batch_analysis_per_study/file_id~HLCA/key~study/value~Banovich_Kropski_2020.zarr/
-      preprocessing: split_data
-      marker_genes: preprocessing
-
-    split_data:
-      key: ann_finest_level
-      values:
-            - Alveolar_Mph_CCL3+
-            - Alveolar_Mph_MT-positive
-            - Alveolar_Mph_proliferating
-            - Alveolar_fibroblasts
-            - AT0
-            - AT1
-            - AT2
-            - AT2_proliferating
-            - Basal_resting
-            - B_cells
-            - CD4_T_cells
-            - CD8_T_cells
-            - Classical_monocytes
-            - Club_(nasal)
-            - Club_(non-nasal)
-            - DC1
-            - DC2
-            - Deuterosomal
-            - EC_aerocyte_capillary
-            - EC_arterial
-            - EC_general_capillary
-            - EC_venous_pulmonary
-            - EC_venous_systemic
-            # - Fibroblasts
-            - Goblet_(bronchial)
-            - Goblet_(nasal)
-            - Goblet_(subsegmental)
-            - Hematopoietic_stem_cells
-            # - Hillock-like
-            - Interstitial_Mph_perivascular
-            - Ionocyte
-            - Lymphatic_EC_differentiating
-            - Lymphatic_EC_mature
-            - Lymphatic_EC_proliferating
-            - Mast_cells
-            - Mesothelium
-            - Migratory_DCs
-            - Monocyte-derived_Mph
-            - Myofibroblasts
-            - NK_cells
-            - Neuroendocrine
-            - Non-classical_monocytes
-            - Pericytes
-            - Peribronchial_fibroblasts
-            - Plasma_cells
-            - Plasmacytoid_DCs
-            - Smooth_muscle
-            - Smooth_muscle_FAM83D+
-            - SM_activated_stress_response
-            # - SMG_duct
-            # - SMG_mucous
-            # - SMG_serous_(bronchial)
-            # - SMG_serous_(nasal)
-            - Subpleural_fibroblasts
-            - Suprabasal
-            - T_cells_proliferating
-            # - Tuft
-    
-    preprocessing:
-      normalize:
-        target_sum: 10_000
-      highly_variable_genes:
-        n_top_genes: 2000
-      assemble:
-        - normalize
-      colors:
-        - assay
-        - study
-        - donor_id
-        - ann_finest_level
-        - n_counts
-        - n_genes
-        - percent_mito
-        - cell_ranger_version
-        - sequencing_platform
-
-    marker_genes:
-      layers: X
-      groups: Processing_site
-      marker_genes: HLCA_immune, HLCA_epithelial, HLCA_endothelial, HLCA_stroma, HLCA_other
-      plot:
-        n_genes: 10
-
-
   batch_correction:
     input:
       preprocessing:
@@ -253,6 +129,7 @@ DATASETS:
         scanvi_dataset: data/pipeline/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=530135892d.zarr
         hlcav1: data/pipeline/qc/metrics/dataset~benchmark/file_id~label_transfer:clustering:preprocessing:HLCA.zarr/
       majority_voting: collect
+
 
   batch_correction_pseudobulk:
     input:
