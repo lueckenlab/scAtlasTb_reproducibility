@@ -3,18 +3,24 @@ DATASETS:
   batch_analysis_all:
     input:
       relabel:
-        HLCA: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
+        HLCA: data/pipeline/HLCAv1/QC/merge/dataset~QC.zarr
       preprocessing: relabel
       batch_analysis: preprocessing
 
+    preprocessing:
+      highly_variable_genes:
+        n_top_genes: 2000
+        dask: true
+      assemble:
+        - highly_variable_genes
+        - pca
 
   batch_analysis_per_study:
     input:
       split_data:
-        HLCA: data/pipeline/batch_analysis/relabel/dataset~batch_analysis_all/file_id~HLCA.zarr
+        HLCA: data/pipeline/HLCAv1/batch_analysis/relabel/dataset~batch_analysis_all/file_id~HLCA.zarr
       preprocessing: split_data
-      sample_representation: split_data
-      batch_analysis: split_data, sample_representation
+      batch_analysis: preprocessing
     
     split_data:
       key: study
@@ -35,56 +41,20 @@ DATASETS:
       threads: 50
     
     preprocessing:
-      normalize:
-        target_sum: 10_000
       highly_variable_genes:
         n_top_genes: 2000
       assemble:
         - highly_variable_genes
         - pca
-      colors:
-        - assay
-        - study
-        - donor_id
-        - tissue_level_2
-        - tissue_level_3
-        - tissue_sampling_method
-        - n_counts
-        - n_genes
-        - percent_mito
-        - cell_ranger_version
-        - enrichment
-        - ensembl_release_reference_genome
-        - ethnicity
-        - sample_type
-        - sequencing_platform
-        - sex
-        - subject_type
-        - age_in_years
-        - age_range
-        - original_celltype_ann
-        - Processing_site
-        - BMI
-        - disease
-    
-    merge:
-      dask: true
-      backed: true
-      threads: 50
-    
-    sample_representation:
-      raw_counts: layers/counts
     
     batch_analysis:
-      normalize:
-        target_sum: 10_000
-      highly_variable_genes:
-        n_top_genes: 2000
-      pca:
-      n_permutations: 100
+      pca_plot:
+        size: 100
+      n_permutations: 1000
       covariates:
         - assay
         - study
+        - dataset
         - donor_id
         - tissue_level_2
         - tissue_level_3
@@ -100,7 +70,6 @@ DATASETS:
         - sex
         - subject_type
         - age_in_years
-        - age_range
         - age_or_mean_of_age_range
         - original_celltype_ann
         - Processing_site
@@ -114,34 +83,68 @@ DATASETS:
   batch_correction:
     input:
       preprocessing:
-        HLCA: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
+        HLCA: data/pipeline/HLCAv1/QC/merge/dataset~QC.zarr
       integration: preprocessing
       clustering: integration
       label_transfer: clustering
       marker_genes: label_transfer
       metrics: marker_genes
       collect:
-        harmony_sample: data/pipeline/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=78b6990a8f.zarr
-        harmony_dataset: data/pipeline/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=2e34347366.zarr
-        scvi_sample: data/pipeline/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=d4ad6acea2.zarr
-        scvi_dataset: data/pipeline/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=614bb8eff1.zarr
-        scanvi_sample: data/pipeline/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=13184491cb.zarr
-        scanvi_dataset: data/pipeline/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=530135892d.zarr
-        hlcav1: data/pipeline/qc/metrics/dataset~benchmark/file_id~label_transfer:clustering:preprocessing:HLCA.zarr/
+        harmony_dataset: data/pipeline/HLCAv1/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=00aba0f087.zarr
+        harmony_sample: data/pipeline/HLCAv1/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=f806260739.zarr
+        scvi_dataset: data/pipeline/HLCAv1/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=95e7f6d559.zarr
+        scvi_sample: data/pipeline/HLCAv1/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=69b18c4fa7.zarr
+        scanvi_dataset: data/pipeline/HLCAv1/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=2e13d74e8f.zarr
+        scanvi_sample: data/pipeline/HLCAv1/batch_analysis/metrics/dataset~batch_correction/file_id~marker_genes:label_transfer:clustering:integration:preprocessing:HLCA--integration=f8c58c64b7.zarr
+        HLCAv1: data/pipeline/qc/metrics/dataset~benchmark/file_id~label_transfer:clustering:preprocessing:HLCA.zarr
       majority_voting: collect
+
+    preprocessing:
+      colors:
+        - assay
+        - dataset
+        - study
+        - ann_level_1
+        - ann_level_2
+        - ann_level_3
+        - ann_finest_level
+        - scanvi_label
+        - qc_status
+        - lung_condition
+        - sex
+        - scrublet_score
+        - doubletdetection_score
+        - n_genes
+        - n_counts
+        - percent_mito
+
+
+    integration:
+      batch:
+        - dataset
+        - sample
+
+    marker_genes:
+      groups:
+        - majority_reference
+        - leiden_0.5_2
+    
+    metrics:
+      funkyheatmap:
+        group_col: integration_method
 
 
   batch_correction_pseudobulk:
     input:
       sample_representation:
-        HLCA: data/pipeline/batch_analysis/majority_voting/dataset~batch_correction/file_id~collect:batch_correction.zarr
+        HLCA: data/pipeline/HLCAv1/batch_analysis/majority_voting/dataset~batch_correction/file_id~collect:batch_correction.zarr
       collect:
-        harmony_sample: data/pipeline/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--harmony_sample.zarr
-        harmony_dataset: data/pipeline/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--harmony_dataset.zarr
-        scvi_sample: data/pipeline/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--scvi_sample.zarr
-        scvi_dataset: data/pipeline/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--scvi_dataset.zarr
-        scanvi_sample: data/pipeline/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--scanvi_sample.zarr
-        scanvi_dataset: data/pipeline/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--scanvi_dataset.zarr
+        harmony_sample: data/pipeline/HLCAv1/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--harmony_sample.zarr
+        harmony_dataset: data/pipeline/HLCAv1/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--harmony_dataset.zarr
+        scvi_sample: data/pipeline/HLCAv1/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--scvi_sample.zarr
+        scvi_dataset: data/pipeline/HLCAv1/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--scvi_dataset.zarr
+        scanvi_sample: data/pipeline/HLCAv1/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--scanvi_sample.zarr
+        scanvi_dataset: data/pipeline/HLCAv1/batch_analysis/sample_representation/dataset~batch_correction_pseudobulk/file_id~HLCA/input_type~embed/method~pseudobulk--hyperparams~None--var_mask~None--use_rep~obsm/X_emb--scanvi_dataset.zarr
     
     sample_representation:
       dask: false

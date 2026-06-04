@@ -4,11 +4,23 @@ DATASETS:
 
     input:
       relabel:
-        HLCA: data/pipeline/qc/merge/dataset~HLCA_qc.zarr
-        # HLCA: data/pipeline/HLCAv1/QC/merge/dataset~QC.zarr
+        HLCA: data/pipeline/HLCAv1/QC/merge/dataset~QC.zarr
       preprocessing: relabel
       integration: preprocessing
-      
+      clustering: integration
+      metrics:
+        harmony_dataset_new: data/pipeline/HLCAv1/batch_analysis/clustering/dataset~Reintegration_new_batch_covariate/file_id~integration:preprocessing:relabel:HLCA--integration=5bfa350bcd.zarr
+        # harmony_dataset: data/pipeline/HLCAv1/batch_analysis/clustering/dataset~batch_correction/file_id~integration:preprocessing:HLCA--integration=00aba0f087.zarr
+        # harmony_sample: data/pipeline/HLCAv1/batch_analysis/clustering/dataset~batch_correction/file_id~integration:preprocessing:HLCA--integration=f806260739.zarr
+        scvi_dataset_new: data/pipeline/HLCAv1/batch_analysis/clustering/dataset~Reintegration_new_batch_covariate/file_id~integration:preprocessing:relabel:HLCA--integration=47ab10c6e1.zarr
+        # scvi_dataset: data/pipeline/HLCAv1/batch_analysis/clustering/dataset~batch_correction/file_id~integration:preprocessing:HLCA--integration=95e7f6d559.zarr
+        # scvi_sample: data/pipeline/HLCAv1/batch_analysis/clustering/dataset~batch_correction/file_id~integration:preprocessing:HLCA--integration=69b18c4fa7.zarr
+        scanvi_dataset_new: data/pipeline/HLCAv1/batch_analysis/clustering/dataset~Reintegration_new_batch_covariate/file_id~integration:preprocessing:relabel:HLCA--integration=c5183445b8.zarr
+        # scanvi_dataset: data/pipeline/HLCAv1/batch_analysis/clustering/dataset~batch_correction/file_id~integration:preprocessing:HLCA--integration=2e13d74e8f.zarr
+        # scanvi_sample: data/pipeline/HLCAv1/batch_analysis/clustering/dataset~batch_correction/file_id~integration:preprocessing:HLCA--integration=f8c58c64b7.zarr
+        # HLCAv1: data/pipeline/qc/metrics/dataset~benchmark/file_id~label_transfer:clustering:preprocessing:HLCA.zarr
+      collect: metrics
+
       # per cell type effect of Processing_site
       filter: preprocessing
       split_data: filter
@@ -18,7 +30,7 @@ DATASETS:
       selective_update:
         base_column: dataset
         new_column: dataset_reintegration
-        query: "dataset == 'Banovich_Kropski_2020'"
+        query: "study == 'Banovich_Kropski_2020'"
         update_map:
           Processing_site:
             TGen: Banovich_Kropski_2020_TGen
@@ -35,73 +47,26 @@ DATASETS:
 
     filter:
       keep_by_column:
-        dataset: 'Banovich_Kropski_2020'
+        study:
+          - Banovich_Kropski_2020
 
     split_data:
-      key: ann_finest_level
+      # fail_on_empty_subset: false
+      key: ann_level_2
       values:
-            - Alveolar_Mph_CCL3+
-            - Alveolar_Mph_MT-positive
-            - Alveolar_Mph_proliferating
-            - Alveolar_fibroblasts
-            - AT0
-            - AT1
-            - AT2
-            - AT2_proliferating
-            - Basal_resting
-            - B_cells
-            - CD4_T_cells
-            - CD8_T_cells
-            - Classical_monocytes
-            - Club_(nasal)
-            - Club_(non-nasal)
-            - DC1
-            - DC2
-            - Deuterosomal
-            - EC_aerocyte_capillary
-            - EC_arterial
-            - EC_general_capillary
-            - EC_venous_pulmonary
-            - EC_venous_systemic
-            # - Fibroblasts
-            - Goblet_(bronchial)
-            - Goblet_(nasal)
-            - Goblet_(subsegmental)
-            - Hematopoietic_stem_cells
-            # - Hillock-like
-            - Interstitial_Mph_perivascular
-            - Ionocyte
-            - Lymphatic_EC_differentiating
-            - Lymphatic_EC_mature
-            - Lymphatic_EC_proliferating
-            - Mast_cells
-            - Mesothelium
-            - Migratory_DCs
-            - Monocyte-derived_Mph
-            - Myofibroblasts
-            - NK_cells
-            - Neuroendocrine
-            - Non-classical_monocytes
-            - Pericytes
-            - Peribronchial_fibroblasts
-            - Plasma_cells
-            - Plasmacytoid_DCs
-            - Smooth_muscle
-            - Smooth_muscle_FAM83D+
-            - SM_activated_stress_response
-            # - SMG_duct
-            # - SMG_mucous
-            # - SMG_serous_(bronchial)
-            # - SMG_serous_(nasal)
-            - Subpleural_fibroblasts
-            - Suprabasal
-            - T_cells_proliferating
-            # - Tuft
+        - Myeloid
+        - Alveolar_epithelium
+        - Lymphoid
+        - Blood_vessels
+        - Airway_epithelium
+        - Fibroblast_lineage
+        - Lymphatic_EC
+        - Smooth_muscle
+        - Mesothelium
     
     marker_genes:
       layers: X
       groups: Processing_site
-      marker_genes: immune, epithelial, endothelial, stroma, other
       plot:
         n_genes: 10
 

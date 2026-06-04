@@ -9,6 +9,7 @@ snakemake \
     .profiles/czbiohub/cluster_config.yaml \
     configs/global.yaml  \
     configs/HLCA/gene_sets.yaml \
+    configs/HLCA/defaults.yaml  \
     configs/HLCA/batch_analysis/defaults.yaml  \
     configs/HLCA/batch_analysis/workflow.yaml  \
     configs/HLCA/batch_analysis/followup.yaml  \

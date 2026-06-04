@@ -1,0 +1,252 @@
+defaults:
+
+  relabel:
+    threads: 4
+
+  merge:
+    dask: true 
+    backed: true
+    persist: true
+    threads: 8
+  
+  split_data:
+    fail_on_empty_subset: true
+    dask: true
+    backed: true
+    threads: 8
+
+  integration:
+    batch: dataset
+    label: scanvi_label
+    raw_counts: layers/counts
+    norm_counts: layers/normcounts
+    var_mask:
+      - highly_variable
+    neighbors:
+      n_neighbors: 30
+    output_types:
+      - embed
+    umap_colors:
+      - assay
+      - dataset
+      - study
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - ann_finest_level
+      - scanvi_label
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - scrublet_score
+      - doubletdetection_score
+      - n_genes
+      - n_counts
+      - percent_mito
+    methods:
+      # unintegrated:
+      
+      harmony_pytorch:
+        n_comps: 50
+        scale: false
+      
+      scvi:
+        n_layers: 2
+        n_latent: 30
+        encode_covariates: true
+        deeply_inject_covariates: false
+        use_layer_norm: both
+        use_batch_norm: none
+        gene_likelihood: nb
+        max_epochs: 200
+        early_stopping: true
+        early_stopping_monitor: elbo_validation
+        early_stopping_patience: 10
+        early_stopping_min_delta: 0.0
+        plan_kwargs:
+          reduce_lr_on_plateau: true
+          lr_patience: 8
+          lr_factor: 0.1
+          weight_decay: 0.0
+      
+      scanvi:
+        # model paramters
+        n_layers: 2
+        n_latent: 30
+        encode_covariates: true
+        deeply_inject_covariates: false
+        use_layer_norm: both
+        use_batch_norm: none
+        gene_likelihood: nb
+        
+        # scVI trainoing parameters
+        max_epochs: 500
+        early_stopping: true
+        early_stopping_monitor: elbo_validation
+        early_stopping_patience: 10
+        early_stopping_min_delta: 0.0
+        plan_kwargs:
+          reduce_lr_on_plateau: true
+          lr_patience: 8
+          lr_factor: 0.1
+          weight_decay: 0.0
+        
+        # scANVI parameters
+        scanvi_max_epochs: 200
+        scanvi_early_stopping: true
+        scanvi_early_stopping_monitor: validation_accuracy
+        scanvi_early_stopping_patience: 10
+        scanvi_early_stopping_min_delta: 0.001
+        scanvi_plan_kwargs:
+          reduce_lr_on_plateau: true
+          lr_patience: 8
+          lr_factor: 0.1
+          weight_decay: 0.0
+
+  clustering:
+    algorithm: leiden
+    use_gpu: false
+    neighbors:
+      use_rep: X_emb
+      n_neighbors: 30
+      metric: euclidean
+    resolutions:
+      - 0.5
+    hierarchy:
+      2: 0.2
+      3: 0.2
+    umap_colors:
+      - file_id
+      - core_or_extension
+      - assay
+      - dataset
+      - study
+      - disease
+      - suspension_type
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - ann_finest_level
+      - scanvi_label
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - scrublet_score
+      - doubletdetection_score
+      - n_genes
+      - n_counts
+      - percent_mito
+      - leiden_3
+      - leiden_4
+      - majority_reference
+
+  label_transfer:
+    majority_reference:
+      reference_key: ann_finest_level
+      query_key: leiden_0.5_3
+      crosstab_kwargs:
+        dropna: true
+
+  metrics:
+    unintegrated: layers/normcounts
+    var_mask: highly_variable
+    clustering:
+      precomputed_key: leiden_0.5_3
+    parse_file_id: true
+    weight_batch: 0.4
+    use_scaled: false
+    label: ann_finest_level
+    batch: dataset
+    gene_sets: morans_i
+    covariates:
+      - sex
+      - anatomical_region_ccf_score
+      # - age_or_mean_age_range
+    metrics:
+      # - nmi
+      - ari
+      - cell_cycle
+      # - graph_connectivity
+      # - isolated_label_f1
+      - pcr_comparison
+      - morans_i
+      - morans_i_genescore
+      - kbet_pg
+      - bras_batch
+
+  marker_genes:
+    sample: sample
+    layer: layers/normcounts
+    marker_genes: immune, epithelial, endothelial, stroma, other
+    rank_genes_groups:
+      reference: rest
+      method: wilcoxon
+    plot:
+      n_genes: 5
+
+  collect:
+    sep: --
+    same_slots:
+      - X
+      - var
+      - layers
+    merge_slots:
+      - obs
+      - obsm
+      - obsp
+      - uns
+    skip_slots:
+      - raw
+
+
+funkyheatmap:
+  group_col: integration_method
+  scale: true
+  scale_by_group: false
+  metric_order:
+    - ARI
+    - Cell cycle conservation
+    - "M's I:sex"
+    - "M's I:anatomical_region_ccf_score"
+    # immune cells
+    - "M's I gs:CD14 monocytes"
+    - "M's I gs:CD16 monocytes"
+    - "M's I gs:DC1"
+    - "M's I gs:pDCs"
+    - "M's I gs:Migratory DCs"
+    - "M's I gs:Alveolar Mph MT-positive"
+    - "M's I gs:Interstitial Mph perivasc"
+    - "M's I gs:Monocyte-derived Mph"
+    - "M's I gs:Plasma cells"
+    - "M's I gs:T cell CD4"
+    - "M's I gs:T cell CD8"
+    - "M's I gs:T reg"
+    # epithelial
+    - "M's I gs:pre-TB secretory"
+    - "M's I gs:AT0"
+    - "M's I gs:AT2"
+    - "M's I gs:Club (nasal)"
+    - "M's I gs:Club (non-nasal)"
+    - "M's I gs:Deuterosomal"
+    - "M's I gs:Goblet (nasal)"
+    - "M's I gs:Goblet (subsegmental)"
+    - "M's I gs:Goblet (bronchial)"
+    - "M's I gs:Multiciliated (nasal)"
+    - "M's I gs:Multiciliated (non-nasal)"
+    - "M's I gs:Hillock-like"
+    # stromal
+    - "M's I gs:Adventitial fibroblasts"
+    - "M's I gs:Alveolar fibroblasts"
+    - "M's I gs:Subpleural fibroblasts"
+    - "M's I gs:Peribronchial fibroblasts"
+    - "M's I gs:Pericytes"
+    - "M's I gs:Myofibroblasts"
+    - "M's I gs:Smooth muscle"
+    - "M's I gs:SM FAM83D+"
+    - "M's I gs:SM activated stress"
+    - "M's I gs:SMG mucous"
+    - "M's I gs:SMG serous (nasal)"
+    - "M's I gs:SMG serous (bronchial)"
+    - "M's I gs:Suprabasal"
