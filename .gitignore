@@ -1,5 +1,7 @@
+*.sif
 images/
 data/
+.snakemake
 .snakemake/
 logs/
 
