@@ -10,16 +10,16 @@ cluster:
     --output=logs/$(date +"%Y_%m_%d")/%j-{rule}.out
     --parsable
 default-resources:
-  - partition=preempted
+  - partition=interactive
   - gpu=0
   - mem_mb=32000
-  - time="0-10:00:00"
+  - time="0-5:00:00"
 restart-times: 2
 max-jobs-per-second: 10
 max-status-checks-per-second: 1
 local-cores: 1
 latency-wait: 200
-jobs: 20
+jobs: 10
 keep-going: True
 rerun-incomplete: True
 printshellcmds: True
@@ -31,20 +31,21 @@ rerun-triggers:
   - mtime
   - params
   - input
-  - code
+#  - code
 #  - software-env
 show-failed-logs: True
 shadow-prefix: /tmp/michaela.mueller
-# groups:
+#groups:
+# - doublets_scrublet=doublets
+# - doublets_doubletdetection=doublets
   # - batch_analysis_determine_covariates=batch_analysis
   # - batch_analysis_plot=batch_analysis
-  # - metrics_prepare=metrics_prepare
-  # - metrics_score_genes=metrics_score_genes
-  # - metrics_cluster=metrics_cluster
-  # - metrics_run=metrics
-# group-components:
+  # - metrics_score_genes=metrics_prepare
+  # - metrics_cluster=metrics_prepare
+  #  - metrics_prepare=metrics
+  #  - metrics_run=metrics
+  #group-components:
+# - doublets=2
   # - batch_analysis=3
   # - metrics_prepare=2
-  # - score_genes=2
-  # - metrics_cluster=2
-  # - metrics=2
+  #  - metrics=2
