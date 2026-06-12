@@ -1,9 +1,6 @@
 output_dir: data/pipeline/feature_selection/LuCA
 images: data/images/feature_selection/LuCA
 
-output_map:
-  preprocessing: data/pipeline/feature_selection/LuCA/preprocessing/dataset~{dataset}/file_id~{file_id}/preprocessed.zarr
-
 DATASETS:
   
   lineage:
@@ -74,10 +71,10 @@ DATASETS:
           file_id~clustering:integration:preprocessing:Immune--integration=11f2c125d1.zarr"
         integration=scvi--strategy=global: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~global/\
           file_id~clustering:split_data:integration:preprocessing:All--integration=11f2c125d1--split_data_key=lineage--split_data_value=Immune.zarr"
-        # integration=scanvi--strategy=lineage: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~per_lineage/\
-        #   file_id~clustering:integration:preprocessing:Immune--integration=62954d6348.zarr"
-        # integration=scanvi--strategy=global: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~global/\
-        #   file_id~clustering:split_data:integration:preprocessing:All--integration=62954d6348--split_data_key=lineage--split_data_value=Immune.zarr"
+        integration=scanvi--strategy=lineage: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~per_lineage/\
+          file_id~clustering:integration:preprocessing:Immune--integration=62954d6348.zarr"
+        integration=scanvi--strategy=global: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~global/\
+          file_id~clustering:split_data:integration:preprocessing:All--integration=62954d6348--split_data_key=lineage--split_data_value=Immune.zarr"
         integration=drvi--strategy=lineage: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~per_lineage/\
           file_id~clustering:integration:preprocessing:Immune--integration=451bff3e4d.zarr"
         integration=drvi--strategy=global: "data/pipeline/feature_selection/LuCA/label_transfer/dataset~global/\
@@ -117,6 +114,7 @@ defaults:
     highly_variable_genes:
       n_top_genes: 2000
       batch_key: dataset
+      # flavor: seurat_v3
     extra_hvgs:
       overwrite_args:
         n_top_genes: 2000
@@ -147,7 +145,7 @@ defaults:
     norm_counts: layers/normcounts
     var_mask: highly_variable
     neighbors:
-      n_neighbors: 100
+      n_neighbors: 30
     batch: sample
     label: ann_fine
     output_types:
@@ -181,15 +179,15 @@ defaults:
         early_stopping: true
         max_epochs: 50
         use_observed_lib_size: true
-      # scanvi:
-      #   n_latent: 30
-      #   n_hidden: 128
-      #   n_layers: 2
-      #   dispersion: gene-batch
-      #   dropout_rate: 0.2
-      #   early_stopping: true
-      #   max_epochs: 50
-      #   use_observed_lib_size: true
+      scanvi:
+        n_latent: 30
+        n_hidden: 128
+        n_layers: 2
+        dispersion: gene-batch
+        dropout_rate: 0.2
+        early_stopping: true
+        max_epochs: 50
+        use_observed_lib_size: true
       drvi:
         n_latent: 128
         encoder_dims:
@@ -208,10 +206,10 @@ defaults:
   
   clustering:
     algorithm: leiden
-    use_gpu: true
+    use_gpu: false
     neighbors:
       use_rep: X_emb
-      n_neighbors: 100
+      n_neighbors: 30
     resolutions:
       - 1.0
     hierarchy:
