@@ -1,6 +1,3 @@
-output_dir: data/pipeline/HRCA
-images: data/images/HRCA
-
 DATASETS:
   
   PREPARE_DATA:
@@ -31,7 +28,7 @@ DATASETS:
       counts: raw/X
       batch: suspension_id
       chunk_size: 50_000
-      use_gpu: true
+      use_gpu: false
 
     qc:
       counts: raw/X
@@ -78,7 +75,8 @@ DATASETS:
         var_key: feature_name
       umap_colors:
         - donor_id
-        - donor_age
+        # - donor_age
+        - age
         - donor_cause_of_death
         - tissue_source
         - suspension_derivation_process
@@ -99,7 +97,7 @@ DATASETS:
         - cell_type
         - sex
         - tissue
-        - self_reported_ethnicity
+        # - self_reported_ethnicity
         - development_stage
         - n_genes
         - n_counts
@@ -120,19 +118,80 @@ DATASETS:
       clustering: integration
       label_transfer: clustering
 
+    clustering:
+      umap_colors:
+        - ann_finest_level
+        - sample_id
+
 
   AC:
     input:
       metrics:
-        harmony_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=490bb22558--split_data_key=majorclass--split_data_value=AC.zarr
-        scvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=5beeb2163e--split_data_key=majorclass--split_data_value=AC.zarr
-        drvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=b75cc9b68f--split_data_key=majorclass--split_data_value=AC.zarr
-        scpoli_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=7db390bb3b--split_data_key=majorclass--split_data_value=AC.zarr
-        scimilarity: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:reference_mapping:preprocessing:HRCA--split_data_key=majorclass--split_data_value=AC.zarr
-        harmony_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:AC--integration=490bb22558.zarr
-        scvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:AC--integration=5beeb2163e.zarr
-        drvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:AC--integration=b75cc9b68f.zarr
-        scpoli_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:AC--integration=7db390bb3b.zarr
+        harmony--strategy=global--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=a24919d825--split_data_key=majorclass--split_data_value=AC.zarr"
+        harmony--strategy=global--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=e74199a9db--split_data_key=majorclass--split_data_value=AC.zarr"
+        harmony--strategy=global--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=1a24148a73--split_data_key=majorclass--split_data_value=AC.zarr"
+        harmony--strategy=global--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=a7d420b74d--split_data_key=majorclass--split_data_value=AC.zarr"
+        scvi--strategy=global--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=ec70d445fd--split_data_key=majorclass--split_data_value=AC.zarr"
+        scvi--strategy=global--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=cb6d4e2a30--split_data_key=majorclass--split_data_value=AC.zarr"
+        scvi--strategy=global--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=52cb2753c4--split_data_key=majorclass--split_data_value=AC.zarr"
+        scvi--strategy=global--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=cea6a0211f--split_data_key=majorclass--split_data_value=AC.zarr"
+        drvi--strategy=global--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=efd2839c34--split_data_key=majorclass--split_data_value=AC.zarr"
+        drvi--strategy=global--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=5f4c6cb408--split_data_key=majorclass--split_data_value=AC.zarr"
+        drvi--strategy=global--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=2ffda9f657--split_data_key=majorclass--split_data_value=AC.zarr"
+        drvi--strategy=global--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=b9cd19da8d--split_data_key=majorclass--split_data_value=AC.zarr"
+        scpoli--strategy=global--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=d54c64c3aa--split_data_key=majorclass--split_data_value=AC.zarr"
+        scpoli--strategy=global--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=84dc044661--split_data_key=majorclass--split_data_value=AC.zarr"
+        scpoli--strategy=global--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=4576e02c67--split_data_key=majorclass--split_data_value=AC.zarr"
+        scpoli--strategy=global--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=edfa17ce0e--split_data_key=majorclass--split_data_value=AC.zarr"
+        # scimilarity--strategy=FM: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:reference_mapping:preprocessing:HRCA--split_data_key=majorclass--split_data_value=AC.zarr
+        harmony--strategy=lineage--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=a24919d825.zarr"
+        harmony--strategy=lineage--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=e74199a9db.zarr"
+        harmony--strategy=lineage--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=1a24148a73.zarr"
+        harmony--strategy=lineage--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=a7d420b74d.zarr"
+        scvi--strategy=lineage--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=ec70d445fd.zarr"
+        scvi--strategy=lineage--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=cb6d4e2a30.zarr"
+        scvi--strategy=lineage--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=52cb2753c4.zarr"
+        scvi--strategy=lineage--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=cea6a0211f.zarr"
+        drvi--strategy=lineage--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=efd2839c34.zarr"
+        drvi--strategy=lineage--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=5f4c6cb408.zarr"
+        drvi--strategy=lineage--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=2ffda9f657.zarr"
+        drvi--strategy=lineage--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=b9cd19da8d.zarr"
+        scpoli--strategy=lineage--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=d54c64c3aa.zarr"
+        scpoli--strategy=lineage--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=84dc044661.zarr"
+        scpoli--strategy=lineage--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=4576e02c67.zarr"
+        scpoli--strategy=lineage--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:AC--integration=edfa17ce0e.zarr"
       collect: metrics
       majority_voting: collect
 
@@ -143,15 +202,71 @@ DATASETS:
   BC:
     input:
       metrics:
-        harmony_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=490bb22558--split_data_key=majorclass--split_data_value=BC.zarr
-        scvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=5beeb2163e--split_data_key=majorclass--split_data_value=BC.zarr
-        drvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=b75cc9b68f--split_data_key=majorclass--split_data_value=BC.zarr
-        scpoli_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=7db390bb3b--split_data_key=majorclass--split_data_value=BC.zarr
-        scimilarity: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:reference_mapping:preprocessing:HRCA--split_data_key=majorclass--split_data_value=BC.zarr
-        harmony_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:BC--integration=490bb22558.zarr
-        scvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:BC--integration=5beeb2163e.zarr
-        drvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:BC--integration=b75cc9b68f.zarr
-        scpoli_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:BC--integration=7db390bb3b.zarr
+        harmony--strategy=global--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=a24919d825--split_data_key=majorclass--split_data_value=BC.zarr"
+        harmony--strategy=global--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=e74199a9db--split_data_key=majorclass--split_data_value=BC.zarr"
+        harmony--strategy=global--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=1a24148a73--split_data_key=majorclass--split_data_value=BC.zarr"
+        harmony--strategy=global--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=a7d420b74d--split_data_key=majorclass--split_data_value=BC.zarr"
+        scvi--strategy=global--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=ec70d445fd--split_data_key=majorclass--split_data_value=BC.zarr"
+        scvi--strategy=global--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=cb6d4e2a30--split_data_key=majorclass--split_data_value=BC.zarr"
+        scvi--strategy=global--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=52cb2753c4--split_data_key=majorclass--split_data_value=BC.zarr"
+        scvi--strategy=global--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=cea6a0211f--split_data_key=majorclass--split_data_value=BC.zarr"
+        drvi--strategy=global--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=efd2839c34--split_data_key=majorclass--split_data_value=BC.zarr"
+        drvi--strategy=global--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=5f4c6cb408--split_data_key=majorclass--split_data_value=BC.zarr"
+        drvi--strategy=global--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=2ffda9f657--split_data_key=majorclass--split_data_value=BC.zarr"
+        drvi--strategy=global--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=b9cd19da8d--split_data_key=majorclass--split_data_value=BC.zarr"
+        scpoli--strategy=global--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=d54c64c3aa--split_data_key=majorclass--split_data_value=BC.zarr"
+        scpoli--strategy=global--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=84dc044661--split_data_key=majorclass--split_data_value=BC.zarr"
+        scpoli--strategy=global--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=4576e02c67--split_data_key=majorclass--split_data_value=BC.zarr"
+        scpoli--strategy=global--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=edfa17ce0e--split_data_key=majorclass--split_data_value=BC.zarr"
+        # scimilarity--strategy=FM: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:reference_mapping:preprocessing:HRCA--split_data_key=majorclass--split_data_value=BC.zarr
+        harmony--strategy=lineage--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=a24919d825.zarr"
+        harmony--strategy=lineage--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=e74199a9db.zarr"
+        harmony--strategy=lineage--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=1a24148a73.zarr"
+        harmony--strategy=lineage--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=a7d420b74d.zarr"
+        scvi--strategy=lineage--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=ec70d445fd.zarr"
+        scvi--strategy=lineage--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=cb6d4e2a30.zarr"
+        scvi--strategy=lineage--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=52cb2753c4.zarr"
+        scvi--strategy=lineage--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=cea6a0211f.zarr"
+        drvi--strategy=lineage--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=efd2839c34.zarr"
+        drvi--strategy=lineage--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=5f4c6cb408.zarr"
+        drvi--strategy=lineage--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=2ffda9f657.zarr"
+        drvi--strategy=lineage--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=b9cd19da8d.zarr"
+        scpoli--strategy=lineage--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=d54c64c3aa.zarr"
+        scpoli--strategy=lineage--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=84dc044661.zarr"
+        scpoli--strategy=lineage--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=4576e02c67.zarr"
+        scpoli--strategy=lineage--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:BC--integration=edfa17ce0e.zarr"
       collect: metrics
       majority_voting: collect
 
@@ -162,15 +277,71 @@ DATASETS:
   RGC:
     input:
       metrics:
-        harmony_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=490bb22558--split_data_key=majorclass--split_data_value=RGC.zarr
-        scvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=5beeb2163e--split_data_key=majorclass--split_data_value=RGC.zarr
-        drvi_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=b75cc9b68f--split_data_key=majorclass--split_data_value=RGC.zarr
-        scpoli_global: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:integration:preprocessing:HRCA--integration=7db390bb3b--split_data_key=majorclass--split_data_value=RGC.zarr
-        scimilarity: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:reference_mapping:preprocessing:HRCA--split_data_key=majorclass--split_data_value=RGC.zarr
-        harmony_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:RGC--integration=490bb22558.zarr
-        scvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:RGC--integration=5beeb2163e.zarr
-        drvi_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:RGC--integration=b75cc9b68f.zarr
-        scpoli_lineage: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/file_id~clustering:integration:preprocessing:RGC--integration=7db390bb3b.zarr
+        harmony--strategy=global--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=a24919d825--split_data_key=majorclass--split_data_value=RGC.zarr"
+        harmony--strategy=global--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=e74199a9db--split_data_key=majorclass--split_data_value=RGC.zarr"
+        harmony--strategy=global--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=1a24148a73--split_data_key=majorclass--split_data_value=RGC.zarr"
+        harmony--strategy=global--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=a7d420b74d--split_data_key=majorclass--split_data_value=RGC.zarr"
+        scvi--strategy=global--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=ec70d445fd--split_data_key=majorclass--split_data_value=RGC.zarr"
+        scvi--strategy=global--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=cb6d4e2a30--split_data_key=majorclass--split_data_value=RGC.zarr"
+        scvi--strategy=global--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=52cb2753c4--split_data_key=majorclass--split_data_value=RGC.zarr"
+        scvi--strategy=global--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=cea6a0211f--split_data_key=majorclass--split_data_value=RGC.zarr"
+        drvi--strategy=global--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=efd2839c34--split_data_key=majorclass--split_data_value=RGC.zarr"
+        drvi--strategy=global--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=5f4c6cb408--split_data_key=majorclass--split_data_value=RGC.zarr"
+        drvi--strategy=global--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=2ffda9f657--split_data_key=majorclass--split_data_value=RGC.zarr"
+        drvi--strategy=global--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=b9cd19da8d--split_data_key=majorclass--split_data_value=RGC.zarr"
+        scpoli--strategy=global--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=d54c64c3aa--split_data_key=majorclass--split_data_value=RGC.zarr"
+        scpoli--strategy=global--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=84dc044661--split_data_key=majorclass--split_data_value=RGC.zarr"
+        scpoli--strategy=global--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=4576e02c67--split_data_key=majorclass--split_data_value=RGC.zarr"
+        scpoli--strategy=global--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/\
+          file_id~clustering:split_data:integration:preprocessing:HRCA--integration=edfa17ce0e--split_data_key=majorclass--split_data_value=RGC.zarr"
+        # scimilarity--strategy=FM: data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_GLOBAL/file_id~clustering:split_data:reference_mapping:preprocessing:HRCA--split_data_key=majorclass--split_data_value=RGC.zarr
+        harmony--strategy=lineage--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=a24919d825.zarr"
+        harmony--strategy=lineage--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=e74199a9db.zarr"
+        harmony--strategy=lineage--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=1a24148a73.zarr"
+        harmony--strategy=lineage--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=a7d420b74d.zarr"
+        scvi--strategy=lineage--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=ec70d445fd.zarr"
+        scvi--strategy=lineage--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=cb6d4e2a30.zarr"
+        scvi--strategy=lineage--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=52cb2753c4.zarr"
+        scvi--strategy=lineage--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=cea6a0211f.zarr"
+        drvi--strategy=lineage--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=efd2839c34.zarr"
+        drvi--strategy=lineage--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=5f4c6cb408.zarr"
+        drvi--strategy=lineage--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=2ffda9f657.zarr"
+        drvi--strategy=lineage--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=b9cd19da8d.zarr"
+        scpoli--strategy=lineage--batch=None--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=d54c64c3aa.zarr"
+        scpoli--strategy=lineage--batch=None--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=84dc044661.zarr"
+        scpoli--strategy=lineage--batch=sample_id--n_hvgs=1000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=4576e02c67.zarr"
+        scpoli--strategy=lineage--batch=sample_id--n_hvgs=3000: "data/pipeline/HRCA/label_transfer/dataset~INTEGRATION_LINEAGE/\
+          file_id~clustering:integration:preprocessing:RGC--integration=edfa17ce0e.zarr"
       collect: metrics
       majority_voting: collect
   

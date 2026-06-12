@@ -1,17 +1,28 @@
+output_dir: data/pipeline/HRCA
+images: data/images/HRCA
+
 resources:
   cpu:
-    partition: preempted
+    partition: preempted,cpu,interactive
     qos: normal
     gpu: 0
-    mem_mb: 150_000
+    mem_mb: 50_000
   gpu:
-    partition: preempted
+    partition: preempted,gpu,interactive
     qos: normal
     gpu: 1
-    mem_mb: 150_000
+    mem_mb: 50_000
 
 
 defaults:
+
+  datasets:
+    - PREPARE_DATA
+    - INTEGRATION_GLOBAL
+    - INTEGRATION_LINEAGE
+    - AC
+    - BC
+    - RGC
 
   relabel:
     selective_update:
@@ -93,27 +104,27 @@ defaults:
       target_sum: 10_000
     highly_variable_genes:
       n_top_genes:
-        - 2000
         - 1000
         - 3000
       batch_key:
-        - sample_id
         - 
-      dask: false
+        - sample_id
+      dask: true
     assemble:
       - highly_variable_genes
       - pca
     colors:
       - donor_id
-      - donor_age
+      - age
       - donor_cause_of_death
       - tissue_source
       - suspension_derivation_process
       - tissue_handling_interval
       - institute
       - library_id_repository
-      - sequencing_platform
-      - is_primary_data
+      # - sequencing_platform
+      # - is_primary_data
+      - ann_finest_level
       - author_cell_type
       - majorclass
       - AC_subclass
@@ -136,37 +147,42 @@ defaults:
   integration:
     raw_counts: layers/counts
     norm_counts: layers/normcounts
-    var_mask: highly_variable
+    var_mask:
+      - highly_variable-batch_key=None-n_top_genes=1000
+      - highly_variable-batch_key=None-n_top_genes=3000
+      - highly_variable-batch_key=sample_id-n_top_genes=1000
+      - highly_variable-batch_key=sample_id-n_top_genes=3000
     neighbors:
       n_neighbors: 50
     batch: sample_id
     output_types:
       - embed
     umap_colors:
-      - donor_id
-      - donor_age
-      - donor_cause_of_death
-      - tissue_source
-      - suspension_derivation_process
-      - tissue_handling_interval
-      - institute
-      - library_id_repository
-      - sequencing_platform
-      - is_primary_data
+      - sample_id
+      - age
+      # - donor_cause_of_death
+      # - tissue_source
+      # - suspension_derivation_process
+      # - tissue_handling_interval
+      # - institute
+      # - library_id_repository
+      # - sequencing_platform
+      # - is_primary_data
+      - ann_finest_level
       - author_cell_type
       - majorclass
-      - AC_subclass
-      - AC_cluster
-      - AC_celltype_number
-      - BC_subclass
-      - RGC_cluster
-      - RGC_celltype_number
+      # - AC_subclass
+      # - AC_cluster
+      # - AC_celltype_number
+      # - BC_subclass
+      # - RGC_cluster
+      # - RGC_celltype_number
       - study_name
       - cell_type
       - sex
       - tissue
-      - self_reported_ethnicity
-      - development_stage
+      # - self_reported_ethnicity
+      # - development_stage
       - n_genes
       - n_counts
       - percent_mito
@@ -177,7 +193,9 @@ defaults:
         scale: false
       scvi:
         n_layers: 2
-        n_latent: 128
+        n_latent:
+          # - 128
+          - 30
         encode_covariates: True
         deeply_inject_covariates: False
         use_layer_norm: both
@@ -185,6 +203,15 @@ defaults:
         gene_likelihood: nb
         max_epochs: 100
         early_stopping: true
+      # scgen:
+      #   max_epochs: 100
+      #   batch_size: 128
+      #   early_stopping: True
+      #   early_stopping_patience: 25
+      # scanorama:
+      #   batch_size: 100_000
+      # bbknn:
+      # combat:
       drvi:
         n_latent: 128
         encoder_dims:
@@ -205,28 +232,33 @@ defaults:
     unintegrated: layers/normcounts
     raw_counts: layers/counts
     var_mask: highly_variable
-    overwrite_file_id: true
+    clustering:
+      precomputed_key: leiden_0.5_2
+    parse_file_id: true
     funkyheatmap:
       weight_batch: 0.4
+      group_col: integration_method
+      scale: true
     label: ann_finest_level
     batch: sample_id
     gene_sets: AC, BC, RGC
     covariates:
       - sex
       - age
+      # - tissue
     metrics:
-      - nmi
-      - ari
-      - cell_cycle
-      - clisi
-      - ilisi
+      # - nmi
+      # - ari
+      # - cell_cycle
+      # - clisi
+      # - ilisi
       # - graph_connectivity
-      - isolated_label_f1
-      - pcr_comparison
+      # - isolated_label_f1
       - bras_batch
-      - morans_i_genes
+      # - morans_i_genes
       - morans_i_genescore
       - morans_i
+      - pcr_comparison
       - kbet_pg
   
   marker_genes:
@@ -255,30 +287,32 @@ defaults:
       2: 0.3
       3: 0.2
     umap_colors:
-      - donor_id
-      - donor_age
-      - donor_cause_of_death
-      - tissue_source
-      - suspension_derivation_process
-      - tissue_handling_interval
-      - institute
-      - library_id_repository
-      - sequencing_platform
-      - is_primary_data
+      # - donor_id
+      - sample_id
+      - age
+      # - donor_cause_of_death
+      # - tissue_source
+      # - suspension_derivation_process
+      # - tissue_handling_interval
+      # - institute
+      # - library_id_repository
+      # - sequencing_platform
+      # - is_primary_data
+      - ann_finest_level
       - author_cell_type
       - majorclass
-      - AC_subclass
-      - AC_cluster
-      - AC_celltype_number
-      - BC_subclass
-      - RGC_cluster
-      - RGC_celltype_number
+      # - AC_subclass
+      # - AC_cluster
+      # - AC_celltype_number
+      # - BC_subclass
+      # - RGC_cluster
+      # - RGC_celltype_number
       - study_name
       - cell_type
       - sex
-      - tissue
-      - self_reported_ethnicity
-      - development_stage
+      # - tissue
+      # - self_reported_ethnicity
+      # - development_stage
       - n_genes
       - n_counts
       - percent_mito
@@ -308,3 +342,9 @@ defaults:
   majority_voting:
       columns:
         - majority_reference--.*
+
+funkyheatmap:
+  n_top: 50
+  group_col: dataset
+  scale: true
+  scale_by_group: true

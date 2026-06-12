@@ -6,7 +6,6 @@ pipeline="$(realpath ../scAtlasTb)"
 snakemake \
   --profile .profiles/czbiohub \
   --configfile \
-    .profiles/czbiohub/cluster_config.yaml \
     configs/global.yaml  \
     configs/HRCA/defaults.yaml  \
     configs/HRCA/marker_genes.yaml  \
