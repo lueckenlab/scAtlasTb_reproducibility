@@ -17,8 +17,10 @@ DATASETS:
       keep_by_query:
         - '`celltypist_Healthy_COVID19_PBMC:majority_voting`.str.contains("DC") & 
           `celltypist_COVID19_HumanChallenge_Blood:majority_voting`.str.contains("DC")'
+        - harmonized_cellhint.str.contains("DC")
+        - cell_type.str.contains("DC")
       remove_by_query:
-        - 'oc_lineage != "Myeloid"'
+        - 'lineage != "Myeloid"'
 
     preprocessing:
       use_gpu: true
@@ -66,12 +68,12 @@ DATASETS:
   
     integration:
       var_mask:
-        - extra_hvgs--batch_key=library_id--flavor=seurat--n_top_genes=5000--span=1
-        - extra_hvgs--batch_key=library_id--flavor=seurat_v3_paper--n_top_genes=5000--span=1
-        - extra_hvgs--batch_key=library_id--flavor=cell_ranger--n_top_genes=5000--span=1
-        - highly_variable--batch_key=library_id--flavor=seurat--n_top_genes=5000--span=1
-        - highly_variable--batch_key=library_id--flavor=seurat_v3_paper--n_top_genes=5000--span=1
-        - highly_variable--batch_key=library_id--flavor=cell_ranger--n_top_genes=5000--span=1
+        - extra_hvgs-batch_key=library_id-flavor=seurat-n_top_genes=5000-span=1
+        - extra_hvgs-batch_key=library_id-flavor=seurat_v3_paper-n_top_genes=5000-span=1
+        - extra_hvgs-batch_key=library_id-flavor=cell_ranger-n_top_genes=5000-span=1
+        - highly_variable-batch_key=library_id-flavor=seurat-n_top_genes=5000-span=1
+        - highly_variable-batch_key=library_id-flavor=seurat_v3_paper-n_top_genes=5000-span=1
+        - highly_variable-batch_key=library_id-flavor=cell_ranger-n_top_genes=5000-span=1
       methods:
         unintegrated:
         harmony_pytorch:

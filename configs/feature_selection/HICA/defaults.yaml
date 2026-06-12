@@ -23,7 +23,7 @@ defaults:
     - DC
 
   split_data:
-    key: oc_lineage
+    key: lineage
     values:
       - TCD8_NK
       - TCD4

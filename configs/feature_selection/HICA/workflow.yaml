@@ -13,23 +13,21 @@ DATASETS:
       remove_by_column:
         qc_status:
           - failed
-        # disease:
-        #   - HIV_vax
 
 
   per_lineage:
     input:
       preprocessing:
         B_plasma: "data/pipeline/feature_selection/HICA/split_data/dataset~prepare_data/file_id~filter:All/\
-          key~oc_lineage/value~B_plasma.zarr"
+          key~lineage/value~B_plasma.zarr"
         Myeloid: "data/pipeline/feature_selection/HICA/split_data/dataset~prepare_data/file_id~filter:All/\
-          key~oc_lineage/value~Myeloid.zarr"
+          key~lineage/value~Myeloid.zarr"
         Other: "data/pipeline/feature_selection/HICA/split_data/dataset~prepare_data/file_id~filter:All/\
-          key~oc_lineage/value~Other.zarr"
+          key~lineage/value~Other.zarr"
         TCD4: "data/pipeline/feature_selection/HICA/split_data/dataset~prepare_data/file_id~filter:All/\
-          key~oc_lineage/value~TCD4.zarr"
+          key~lineage/value~TCD4.zarr"
         TCD8_NK: "data/pipeline/feature_selection/HICA/split_data/dataset~prepare_data/file_id~filter:All/\
-          key~oc_lineage/value~TCD8_NK.zarr"
+          key~lineage/value~TCD8_NK.zarr"
       integration: preprocessing
       clustering: integration
       label_transfer: clustering
