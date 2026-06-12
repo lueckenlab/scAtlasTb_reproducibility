@@ -3,141 +3,133 @@ DATASETS:
   follow_up_immune:
     input:
       filter: 
-        HLCAv1: data/pipeline/HLCAv1/QC/relabel/dataset~prepare_data/file_id~HLCAv1.zarr
+        HLCAv1: data/pipeline/HLCAv1/QC/majority_voting/dataset~HLCAv1_extended/file_id~collect:HLCAv1_extended.zarr
       relabel: filter
-      split_data: relabel
-      qc: relabel, split_data
+      qc: relabel
+      marker_genes: relabel
     
     filter:
       keep_by_column:
-        ann_level_1:
-          - Immune
+        study:
+          - Meyer_2021
     
     relabel:
       selective_update:
-        base_column: ann_finest_level
-        new_column: ann_plasma
-        update_map:  # remove annotations for any cells other than plasma cells
-          ann_level_1:
-            Immune: 
-          ann_finest_level:
-            'Plasma cells': 'Plasma cells'
-
-    split_data:
-      slots:
-        X: X
-        layers: layers
-        obs: obs
-        var: var
-        obsm: obsm
-        obsp: obsp
-
-    qc:
-      counts: X
-      hue:
-        - ann_finest_level
-        - ann_plasma
-        - assay
-        - dataset
-        # - study
-        - donor_id
-        - fresh_or_frozen
-        - sex
-        # - lung_condition
-        - sequencing_platform
-        # - smoking_status
-        # - subject_type
-        - scrublet_score
-      scautoqc_metrics:
-        - n_counts
-        - n_genes
-        - percent_mito
-
-
-  follow_up_AT2:
-    input:
-      filter:
-        HLCAv1: data/pipeline/HLCAv1/QC/relabel/dataset~prepare_data/file_id~HLCAv1.zarr
-      relabel: filter
-      split_data: relabel
-      qc: relabel, split_data
-
-    filter:
-      keep_by_column:
-        ann_finest_level:
-          - AT2
-          - 'AT2 proliferating'
-        leiden_3:
-          - '0.4.1'  # secretory epithelial
-          - '0.1.0'  # B / Plasma cells
-          - '0.1.2'  # stressed epithelial
-          - '0.1.3'  # stromal / mesenchymal
-          - '0.1.4'  # macrophages / mast cells
-          - '0.1.1'  # low quality
-
-    relabel:
-      selective_update:
-        base_column: ann_finest_level
-        new_column: ann_AT2
+        base_column: study
+        new_column: low_qc_cluster
         update_map:
-          leiden_4:
-            "0.1.0.0": "Inflammatory / Activated AT2 cells"
-            "0.1.0.1" : "immune cells" # "B cells / Plasma cells",
-            "0.1.0.2": "Pulmonary Neuroendocrine cells"
-            "0.1.0.3": "stressed epithelium" # not alveolar?
-            "0.1.1.0": "low-quality cells"
-            "0.1.1.1": "low-quality cells"
-            "0.1.1.2": "low-quality cells"
-            "0.1.1.3": "low-quality cells"
-            "0.1.2.0": "stressed epithelium" # not alveolar?
-            "0.1.2.1": "immune cells" # "monocytes / macrophages"
-            "0.1.2.2": "cycling epithelial cells"
-            "0.1.2.3": "epithelial cells" # not alveolar?
-            "0.1.2.4": "immune cells" # "NK cells and/or CD8⁺ T cells"
-            "0.1.3.0": "stromal / mesenchymal"
-            "0.1.3.1": "stromal / mesenchymal"
-            "0.1.3.2": "stressed epithelium"
-            "0.1.4.0": "immune cells" # "monocytes / macrophages"
-            "0.1.4.1": "stromal / mesenchymal"
-            "0.1.4.2": "immune cells" # "mast cells / macrophages"
-            "0.1.4.3": "immune cells" # "mast cells / cytotoxic T-cells"
-            "0.4.1.2": "secretory epithelial cells"
-            "0.4.1.3": "secretory epithelial cells"
+          leiden_0.5_3--label_transfer:clustering:highQC:
+            "29_1_3": "lowQC_cluster"
 
-    split_data:
-      slots:
-        X: X
-        layers: layers
-        obs: obs
-        var: var
-        obsm: obsm
-        obsp: obsp
-    
     qc:
-      counts: X
+      counts: layers/counts
       hue:
         - ann_finest_level
-        - ann_AT2
-        - leiden_3
-        - leiden_4
+        - low_qc_cluster
         - assay
         - dataset
-        - study
         - donor_id
+        - sample
         - fresh_or_frozen
         - sex
-        - lung_condition
         - sequencing_platform
-        - smoking_status
-        - subject_type
-        - tissue_dissociation_protocol
-        - tissue_level_2
         - scrublet_score
-      scautoqc_metrics_params: configs/HLCA/QC/scautoqc_params.tsv
-      scautoqc_gaussian_kwargs:
-        threshold: 0.05
       scautoqc_metrics:
         - n_counts
         - n_genes
         - percent_mito
         - scrublet_score
+
+    marker_genes:
+      groups:
+        - ann_finest_level
+        - low_qc_cluster
+        - leiden_0.5_3--label_transfer:clustering:highQC
+
+  # follow_up_AT2:
+  #   input:
+  #     filter:
+  #       HLCAv1: data/pipeline/HLCAv1/QC/relabel/dataset~prepare_data/file_id~HLCAv1.zarr
+  #     relabel: filter
+  #     split_data: relabel
+  #     qc: relabel, split_data
+
+  #   filter:
+  #     keep_by_column:
+  #       ann_finest_level:
+  #         - AT2
+  #         - 'AT2 proliferating'
+  #       leiden_3:
+  #         - '0.4.1'  # secretory epithelial
+  #         - '0.1.0'  # B / Plasma cells
+  #         - '0.1.2'  # stressed epithelial
+  #         - '0.1.3'  # stromal / mesenchymal
+  #         - '0.1.4'  # macrophages / mast cells
+  #         - '0.1.1'  # low quality
+
+  #   relabel:
+  #     selective_update:
+  #       base_column: ann_finest_level
+  #       new_column: ann_AT2
+  #       update_map:
+  #         leiden_4:
+  #           "0.1.0.0": "Inflammatory / Activated AT2 cells"
+  #           "0.1.0.1" : "immune cells" # "B cells / Plasma cells",
+  #           "0.1.0.2": "Pulmonary Neuroendocrine cells"
+  #           "0.1.0.3": "stressed epithelium" # not alveolar?
+  #           "0.1.1.0": "low-quality cells"
+  #           "0.1.1.1": "low-quality cells"
+  #           "0.1.1.2": "low-quality cells"
+  #           "0.1.1.3": "low-quality cells"
+  #           "0.1.2.0": "stressed epithelium" # not alveolar?
+  #           "0.1.2.1": "immune cells" # "monocytes / macrophages"
+  #           "0.1.2.2": "cycling epithelial cells"
+  #           "0.1.2.3": "epithelial cells" # not alveolar?
+  #           "0.1.2.4": "immune cells" # "NK cells and/or CD8⁺ T cells"
+  #           "0.1.3.0": "stromal / mesenchymal"
+  #           "0.1.3.1": "stromal / mesenchymal"
+  #           "0.1.3.2": "stressed epithelium"
+  #           "0.1.4.0": "immune cells" # "monocytes / macrophages"
+  #           "0.1.4.1": "stromal / mesenchymal"
+  #           "0.1.4.2": "immune cells" # "mast cells / macrophages"
+  #           "0.1.4.3": "immune cells" # "mast cells / cytotoxic T-cells"
+  #           "0.4.1.2": "secretory epithelial cells"
+  #           "0.4.1.3": "secretory epithelial cells"
+
+  #   split_data:
+  #     slots:
+  #       X: X
+  #       layers: layers
+  #       obs: obs
+  #       var: var
+  #       obsm: obsm
+  #       obsp: obsp
+    
+  #   qc:
+  #     counts: X
+  #     hue:
+  #       - ann_finest_level
+  #       - ann_AT2
+  #       - leiden_3
+  #       - leiden_4
+  #       - assay
+  #       - dataset
+  #       - study
+  #       - donor_id
+  #       - fresh_or_frozen
+  #       - sex
+  #       - lung_condition
+  #       - sequencing_platform
+  #       - smoking_status
+  #       - subject_type
+  #       - tissue_dissociation_protocol
+  #       - tissue_level_2
+  #       - scrublet_score
+  #     scautoqc_metrics_params: configs/HLCA/QC/scautoqc_params.tsv
+  #     scautoqc_gaussian_kwargs:
+  #       threshold: 0.05
+  #     scautoqc_metrics:
+  #       - n_counts
+  #       - n_genes
+  #       - percent_mito
+  #       - scrublet_score

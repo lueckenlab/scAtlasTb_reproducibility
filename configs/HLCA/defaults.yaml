@@ -15,6 +15,36 @@ defaults:
     backed: true
     threads: 8
 
+  preprocessing:
+    raw_counts: raw/X
+    normalize:
+      target_sum: 10_000
+    highly_variable_genes:
+      n_top_genes: 2000
+      batch_key: dataset
+      dask: false
+    assemble:
+      - normalize
+      - highly_variable_genes
+    colors:
+      - assay
+      - dataset
+      - study
+      - ann_level_1
+      - ann_level_2
+      - ann_level_3
+      - ann_finest_level
+      - scanvi_label
+      - majority_reference
+      - qc_status
+      - lung_condition
+      - sex
+      - scrublet_score
+      - doubletdetection_score
+      - n_genes
+      - n_counts
+      - percent_mito
+
   integration:
     batch: dataset
     label: scanvi_label

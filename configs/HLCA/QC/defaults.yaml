@@ -1,0 +1,12 @@
+output_dir: data/pipeline/HLCAv1/QC
+images: data/images/HLCAv1/QC
+
+defaults:
+
+  doublets:
+    counts: raw/X
+    batch: sample
+    chunk_size: 100_000
+    methods:
+      - scrublet
+      - doubletdetection

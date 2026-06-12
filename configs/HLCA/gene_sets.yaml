@@ -16,10 +16,10 @@ MARKER_GENES:
       - MTSS1
       - LILRA5
       - FCN1
-    DC1:
-      - XCR1
-      - CLEC9A
-      - CLNK
+    # DC1:
+    #   - XCR1
+    #   - CLEC9A
+    #   - CLNK
     DC2:
       - PKIB
       - CLEC10A
@@ -320,3 +320,187 @@ MARKER_GENES:
       - CELF3
       - SLC6A17
       - CDK5R2
+  
+  morans_i:
+  
+    # CD14 monocytes:
+    #   - CD14
+    #   - CSF3R
+    #   # - S100A12
+    #   # - FCN1
+    #   # - RNASE2
+    CD16 monocytes:
+      - FCGR3A # CD16
+      - CX3CR1
+      - CDKN1C
+      - CSF1R
+      - MTSS1
+      - LILRA5
+      # - FCN1
+    DC1: # TODO: remove
+      - XCR1
+      - CLEC9A
+      - CLNK
+    # pDCs:
+    #   - SCT
+    #   - SMPD3
+    #   - LILRA4
+    # Migratory DCs:
+    #   - LAD1
+    #   - CCL19
+    Alveolar Mph MT-positive:
+      - MT1M
+      - CCL18
+      - MT1E
+    Interstitial Mph perivasc:
+      - F13A1
+      - FOLR2
+    Monocyte-derived Mph:
+      - SPP1
+      - HAMP
+    Plasma cells:
+      - MZB1
+      - JCHAIN
+      - TNFRSF17
+      - ITM2C
+      - DERL3
+      - POU2AF1
+      - IGHA1 # (Igs)
+      - TXNDC11
+    T cell CD4:
+      - CD40LG
+      - TNFRSF25
+      - CD28
+      - CD4
+      - TRAT1
+    # T cell CD8:
+    #   - CD8A
+    #   - CD8B
+    #   - TRGC2
+    T reg:
+      - FOXP3
+      - RTKN2
+
+    pre-TB secretory:
+      - SCGB1A1 # from Tata paper
+      - SFTPB
+      - SCGB3A2
+      - RNASE1
+      - SFTA1P
+    AT0:
+      - SFTPB
+      - SCGB3A2
+      - IGFBP2
+      - SERPINF1
+      - TSPAN1
+      - SFTA2
+    AT2:
+      - MFSD2A
+      - C8orf4
+      - C11orf96
+    # Club (nasal):
+    #   - SERPINB3
+    #   - TCN1
+    #   - ASRGL1
+    # Club (non-nasal):
+    #   - CYP2F1
+    #   - SCGB3A1
+    #   - BPIFB1
+    # Deuterosomal:
+    #   - CDC20B
+    #   - KDELC2
+    #   - E2F7
+    # Goblet (bronchial):
+    #   - GPX8
+    #   - ALDH1A3
+    #   - CEACAM5
+    # Goblet (nasal):
+    #   - CEACAM5
+    #   - LYPD2
+    #   - PSCA
+    # Goblet (subsegmental):
+    #   - BPIFB1
+    #   - C16orf89
+    #   - NPDC1
+    Multiciliated (nasal):
+      - BEST4
+      - LYPD2
+    Multiciliated (non-nasal):
+      - RSPH1
+      - C20orf85
+      - C9orf24
+    Hillock-like:
+      - DSG3
+      - RAB38
+      - TNS4
+    # Tuft:
+    #   - DAB1
+    # Ionocyte:
+    #   - BSND
+    #   - IGF1
+    #   - CLCNKB
+
+    Edothelial cells:
+      - CLDN5
+      - ECSCR
+      - CLEC14A
+
+    Adventitial fibroblasts:
+      - MFAP5
+      - SCARA5
+      - PI16
+    # Alveolar fibroblasts:
+    #   - SPINT2
+    #   - LIMCH1
+    #   - FGFR4
+    # Subpleural fibroblasts:
+    #   - MARCKSL1
+    #   - APOC1
+    #   - MMP23B
+    Peribronchial fibroblasts:
+      - COL15A1
+      - CXCL14
+      - DIO2
+    Pericytes:
+      - LAMC3
+    Myofibroblasts:
+      - LMOD1
+      - ATP1B1
+      - TYRP1
+    Smooth muscle:
+      - MYH11
+      - TINAGL1
+      - PLN
+    # SM FAM83D+:
+    #   - FAM83D
+    SM activated stress:
+      - EGR1
+      - FOSB
+      - ATF3
+    SMG mucous:
+      - CCL28
+      - BPIFB2
+      - MUC5B
+      - NKX3-1
+    SMG serous (bronchial):
+      - CCL28
+      - RP11-1143G9.4
+      - S100A1
+      - PRB3
+    SMG serous (nasal):
+      - CCL28
+      - STATH
+      - ODAM
+      - MUC7
+    Suprabasal:
+      - IGFBP2
+      - SERPINF1
+      - TSPAN1
+      - KRT5
+      - SERPINB3
+
+    # other
+    # Neuroendocrine:
+    #   - CELF3
+    #   - SLC6A17
+    #   - CDK5R2

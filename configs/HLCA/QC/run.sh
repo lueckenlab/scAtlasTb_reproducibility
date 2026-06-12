@@ -9,8 +9,10 @@ snakemake \
     .profiles/czbiohub/cluster_config.yaml \
     configs/global.yaml \
     configs/HLCA/gene_sets.yaml \
-    configs/HLCA/QC/global.yaml \
+    configs/HLCA/defaults.yaml \
+    configs/HLCA/QC/defaults.yaml \
     configs/HLCA/QC/core.yaml \
     configs/HLCA/QC/extended.yaml \
+    configs/HLCA/QC/followup_qc.yaml \
   --snakefile $pipeline/workflow/Snakefile \
     $@

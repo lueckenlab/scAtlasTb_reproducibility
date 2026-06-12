@@ -9,6 +9,7 @@ DATASETS:
       doublets: split_data
       qc: doublets
       merge: qc
+      preprocessing: merge
 
     relabel:
       rename_obsm_keys:
@@ -69,12 +70,10 @@ DATASETS:
     qc:
       counts: raw/X  
       hue:
-        - original_ann_level_2
+        - ann_level_1
         - dataset
         - assay
-        - sequencing_platform
         - scrublet_score
-        - doubletdetection_score
       scautoqc_metrics:
         - n_counts
         - n_genes
@@ -93,31 +92,36 @@ DATASETS:
       threads: 50
       persist: true
   
+    preprocessing:
+      assemble:
+        - normalize
 
   HLCAv1_extended:
 
     input:
       # query-ref mapping to highQC reference
       reference_mapping:
-        QC: data/pipeline/HLCAv1/QC/merge/dataset~QC_extended.zarr
+        QC: data/pipeline/HLCAv1/QC/preprocessing/dataset~QC_extended/file_id~QC_extended.zarr
+        # QC: data/pipeline/HLCAv1/QC/preprocessing/dataset~QC_extended/file_id~QC_extended.zarr
       merge:
         extended: reference_mapping
-        highQC: data/pipeline/HLCAv1/QC/collect/dataset~highQC.zarr
+        highQC: data/pipeline/HLCAv1/QC/label_transfer/dataset~highQC/file_id~clustering:relabel:merge:highQC.zarr
 
-      # original core + extended dataset
+      # de-novo integration of original core + extended dataset
       preprocessing:
         HLCAv1: data/pipeline/HLCAv1/QC/relabel/dataset~QC_extended/file_id~HLCAv1.zarr
-      integration: preprocessing # de-novo integration
+      integration: preprocessing
       
       # downtsream analyses
       clustering:
-        HLCAv1: preprocessing
-        highQC: merge
-        deNovo: integration
+        HLCAv1: preprocessing  # HLCA from study
+        highQC: merge # query-reference mapping output
+        deNovo: integration # de novo integration
       metrics: clustering
       label_transfer: clustering
       collect: label_transfer
       majority_voting: collect
+      marker_genes: majority_voting
 
 
     ## module configuration: how each module is run ##
@@ -127,7 +131,7 @@ DATASETS:
       scarches:
         model: "data/pipeline/HLCAv1/QC/integration/run_method/dataset~highQC/file_id~highQC\
           /batch~dataset/var_mask~highly_variable/method~scanvi--hyperparams~c4d95b3ea1--label~scanvi_label/model"
-        layer: X
+        layer: layer/counts
         model_params:
           batch_key: dataset
           freeze_dropout: true
@@ -160,25 +164,49 @@ DATASETS:
         - qc_status
 
     merge:
+      persist: false
       slots:
-        X: X
-        layers: layers
         obs: obs
         var: var
         obsm: obsm
+        X: X
       keep_all_columns: false
+
+    integration:
+      methods:
+        scvi:
+          n_layers: 2
+          n_latent: 30
+          encode_covariates: true
+          deeply_inject_covariates: false
+          use_layer_norm: both
+          use_batch_norm: none
+          gene_likelihood: nb
+          max_epochs: 200
+          early_stopping: true
+          early_stopping_monitor: elbo_validation
+          early_stopping_patience: 10
+          early_stopping_min_delta: 0.0
+          plan_kwargs:
+            reduce_lr_on_plateau: true
+            lr_patience: 8
+            lr_factor: 0.1
+            weight_decay: 0.0
 
     clustering:
       recompute_neighbors: true
       recompute_umap: true
+
+    metrics:
+      unintegrated: X
 
     collect:
       sep: --
       same_slots:
         - X
         - layers
-      merge_slots:
         - var
+      merge_slots:
         - obs
         - obsm
         - obsp

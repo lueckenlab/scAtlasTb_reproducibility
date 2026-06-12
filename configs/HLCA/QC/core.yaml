@@ -31,6 +31,21 @@ DATASETS:
           ann_finest_level:
             'Unknown': # remove labels for "Unknown" cells
 
+    split_data:
+      key: study
+      values:
+        - Banovich_Kropski_2020
+        - Barbry_Leroy_2020
+        - Jain_Misharin_2021
+        - Krasnow_2020
+        - Lafyatis_Rojas_2019
+        - Meyer_2019
+        - Misharin_2021
+        - Misharin_Budinger_2018
+        - Nawijn_2021
+        - Seibold_2020
+        - Teichmann_Meyer_2019
+
 
   QC:
     input:
@@ -51,13 +66,14 @@ DATASETS:
       merge: qc
     
     split_data:
+      fail_on_empty_subset: false
       key: ann_level_1
       values:
         - Immune
         - Epithelial
         - Endothelial
         - Stroma
-        - Proliferating_cells
+        # - Proliferating_cells
     
     qc:
       counts: raw/X
@@ -103,11 +119,11 @@ DATASETS:
 
       # de novo integration of highQC data only
       integration: 
-        highQC: data/pipeline/HLCAv1/QC/preprocessing/dataset~highQC/file_id~split_data:All--split_data_key=study--split_data_value=passed.zarr
+        highQC: data/pipeline/HLCAv1/QC/preprocessing/dataset~highQC/file_id~split_data:All--split_data_key=qc_status--split_data_value=passed.zarr
       
       # map low QC back to high QC reference
       reference_mapping:
-        lowQC: data/pipeline/HLCAv1/QC/preprocessing/dataset~highQC/file_id~split_data:All--split_data_key=study--split_data_value=failed.zarr
+        lowQC: data/pipeline/HLCAv1/QC/preprocessing/dataset~highQC/file_id~split_data:All--split_data_key=qc_status--split_data_value=failed.zarr
       merge:
         # low QC must go first, otherwise gets overwritten by high QC data
         lowQC: reference_mapping
@@ -116,18 +132,14 @@ DATASETS:
       # downstream analyses
       relabel: merge
       clustering: relabel
-      metrics: clustering
       label_transfer: clustering
-      collect:
-        HLCAv1: data/pipeline/HLCAv1/QC/preprocessing/dataset~prepare_data/file_id~relabel:HLCAv1.zarr  # must go first so that order of obs matches
-        highQC: label_transfer
-      marker_genes: collect
+      marker_genes: label_transfer
 
     
     ## module configuration: how each module is run ##
     
     split_data:
-      value: qc_status
+      key: qc_status
       values:
         - failed
         - passed
@@ -203,9 +215,12 @@ DATASETS:
         - qc_status
 
     merge:
+      persist: false
       slots:
         obs: obs
         obsm: obsm
+        var: var
+        X: layers/normcounts
 
     relabel:
       constant_columns:
@@ -236,11 +251,28 @@ DATASETS:
         - layers
         - raw
       merge_slots:
-        - obs
         - obsm
+        - obs
 
     marker_genes:
+      layer: X
       groups:
         - ann_finest_level
-        - majority_reference--HLCAv1
-        - majority_reference--highQC
+        - majority_reference
+
+
+  Benchmark_highQC:
+
+    input:
+      clustering:
+        HLCAv1: data/pipeline/HLCAv1/QC/preprocessing/dataset~prepare_data/file_id~relabel:HLCAv1.zarr
+      metrics:
+        HLCAv1: clustering
+        highQC: data/pipeline/HLCAv1/QC/label_transfer/dataset~highQC/file_id~clustering:relabel:merge:highQC.zarr
+    
+    clustering:
+      recompute_umap: true
+      recompute_neighbors: true
+
+    metrics:
+      unintegrated: X

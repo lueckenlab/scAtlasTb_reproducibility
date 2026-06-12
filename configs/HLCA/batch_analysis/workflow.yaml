@@ -38,7 +38,7 @@ DATASETS:
         # - Teichmann_Meyer_2019
       dask: true
       backed: true
-      threads: 50
+      threads: 4
     
     preprocessing:
       highly_variable_genes:
