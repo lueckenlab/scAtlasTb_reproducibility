@@ -4,7 +4,7 @@ Reproduces **Figures 3C–F** using the Human Retinal Cell Atlas (HRCA).
 
 ## Setup
 
-Install the environment from [lueckenlab/scAtlasTb](https://github.com/lueckenlab/scAtlasTb) and set data paths in `configs/HRCA/`.
+Install the `scanpy` environment from [lueckenlab/scAtlasTb](https://github.com/lueckenlab/scAtlasTb) (`envs/scanpy.yaml`) and set data paths in `configs/HRCA/`.
 
 ## Notebooks
 

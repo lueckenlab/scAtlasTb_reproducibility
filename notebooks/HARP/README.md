@@ -4,7 +4,7 @@ Reproduces **Figure 5** using the B plasma cell lineage of the HARP dataset.
 
 ## Setup
 
-Install the environment from [lueckenlab/scAtlasTb](https://github.com/lueckenlab/scAtlasTb) and set data paths in `configs/feature_selection/`. Notebooks are run from this directory so that `marker_genes_functions.py` and `misc.py` are importable.
+Install the `scanpy` environment from [lueckenlab/scAtlasTb](https://github.com/lueckenlab/scAtlasTb) (`envs/scanpy.yaml`) and set data paths in `configs/feature_selection/`. Notebooks are run from this directory so that `marker_genes_functions.py` and `misc.py` are importable.
 
 ## Notebooks
 

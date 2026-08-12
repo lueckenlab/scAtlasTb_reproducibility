@@ -4,7 +4,7 @@ Analysis notebooks for reproducing all figures in the paper. Each subdirectory c
 
 ## Setup
 
-Install the environment from [lueckenlab/scAtlasTb](https://github.com/lueckenlab/scAtlasTb), then configure data paths in `configs/` before running the notebooks.
+Install the `scanpy` environment from [lueckenlab/scAtlasTb](https://github.com/lueckenlab/scAtlasTb) (`envs/scanpy.yaml`), then configure data paths in `configs/` before running the notebooks.
 
 ## Analyses
 

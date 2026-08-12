@@ -4,7 +4,7 @@ Reproduces **Figures 2C, 2D, and 4** using the Human Lung Cell Atlas (HLCA).
 
 ## Setup
 
-Install the environment from [lueckenlab/scAtlasTb](https://github.com/lueckenlab/scAtlasTb) and set data paths in `configs/HLCA/`.
+Install the `scanpy` environment from [lueckenlab/scAtlasTb](https://github.com/lueckenlab/scAtlasTb) (`envs/scanpy.yaml`) and set data paths in `configs/HLCA/`.
 
 ## Notebooks
 

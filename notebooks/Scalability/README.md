@@ -4,7 +4,7 @@ Reproduces **Figure 1F** from the storage and scalability benchmark.
 
 ## Setup
 
-Install the environment from [lueckenlab/scAtlasTb](https://github.com/lueckenlab/scAtlasTb). Before running the notebook, collect per-format file sizes with:
+Install the `scanpy` environment from [lueckenlab/scAtlasTb](https://github.com/lueckenlab/scAtlasTb) (`envs/scanpy.yaml`). Before running the notebook, collect per-format file sizes with:
 
 ```bash
 bash scripts/storage_compare.sh
