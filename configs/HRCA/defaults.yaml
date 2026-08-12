@@ -344,7 +344,7 @@ defaults:
         - majority_reference--.*
 
 funkyheatmap:
-  n_top: 50
+  n_top: 10
   group_col: dataset
   scale: true
   scale_by_group: true
