@@ -10,8 +10,8 @@ Install the `scanpy` environment from [lueckenlab/scAtlasTb](https://github.com/
 
 | Notebook | Figures | Output |
 |---|---|---|
-| `Fig5_B_plasma.ipynb` | 5A, 5B, 5C, 5D, Ext Fig 5A | `figures/figure5/` |
-| `Fig5_Feature_selection_benchmark.ipynb` | Ext Fig 5B, Supp Fig 10 | `figures/figure5/tradeoff/` |
+| `Fig5_B_plasma.ipynb` | 5A, 5B, 5C, 5D, Ext Fig 4A | `figures/figure5/` |
+| `Fig5_Feature_selection_benchmark.ipynb` | Ext Fig 4B, Supp Fig 10 | `figures/figure5/tradeoff/` |
 
 ## Output files
 
@@ -20,9 +20,9 @@ Install the `scanpy` environment from [lueckenlab/scAtlasTb](https://github.com/
 - `5B_extra_hvg_leiden_1.0_1--metrics:harmony--strategy=hvg--n_hvg=3000_<group>.svg` (Fig 5B)
 - `5C_marker_genes.svg` (Fig 5C)
 - `5D_extra_hvg_harmonized_cellhint.svg` (Fig 5D)
-- `Default HVG clustering markers-vs-Curated gene set.svg` (Ext Fig 5A)
+- `Default HVG clustering markers-vs-Curated gene set.svg` (Ext Fig 4A)
 
-**Ext Fig 5B / Supp Fig 10** (`figures/figure5/tradeoff/`)
-- `n_hvg_B_tradeoff.svg` (Ext Fig 5B)
+**Ext Fig 4B / Supp Fig 10** (`figures/figure5/tradeoff/`)
+- `n_hvg_B_tradeoff.svg` (Ext Fig 4B)
 - `n_hvg_B_tradeoff_custom.svg`
 - `n_hvg_B_metrics_vs_nhvg.svg` (Supp Fig 10)
