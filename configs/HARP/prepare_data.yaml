@@ -1,0 +1,19 @@
+DATASETS:
+
+  Benchmark_prepare_data:
+    input:
+      filter:
+        All: data/input/hca_out/relabel/dataset~Benchmark_prepare_data/file_id~All.zarr
+      split_data: filter
+      subset: filter, split_data
+      preprocessing: filter, split_data
+
+    filter:
+      dask: true
+      backed: true
+      remove_by_query:
+        - 'oc_index.isna()'
+        - 'library_id.isna()'
+      remove_by_column:
+        sample_id:
+          - doublets_unassigned

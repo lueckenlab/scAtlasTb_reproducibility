@@ -1,0 +1,189 @@
+DATASETS:
+
+  Benchmark_n_hvg:
+    input:
+      preprocessing:
+        TCD8_NK: data/pipeline/HARP/subset/dataset~Benchmark_prepare_data/file_id~split_data:filter:All--split_data_key=lineage_celltypist--split_data_value=TCD8_NK_cells.zarr
+        TCD4: data/pipeline/HARP/subset/dataset~Benchmark_prepare_data/file_id~split_data:filter:All--split_data_key=lineage_celltypist--split_data_value=TCD4_cells.zarr
+        B_plasma: data/pipeline/HARP/subset/dataset~Benchmark_prepare_data/file_id~split_data:filter:All--split_data_key=lineage_celltypist--split_data_value=B_cells.zarr
+        Myeloid: data/pipeline/HARP/subset/dataset~Benchmark_prepare_data/file_id~split_data:filter:All--split_data_key=lineage_celltypist--split_data_value=Myeloid.zarr
+        # Other: data/pipeline/HARP/subset/dataset~Benchmark_prepare_data/file_id~split_data:filter:All--split_data_key=lineage_celltypist--split_data_value=Other.zarr
+        All: data/pipeline/HARP/subset/dataset~Benchmark_prepare_data/file_id~filter:All.zarr
+      integration: preprocessing
+      clustering: integration
+      label_transfer: clustering
+    
+    preprocessing:
+      highly_variable_genes:
+        n_top_genes:
+          - 3000
+          - 2000
+          - 4000
+          - 5000
+          - 6000
+          - 7000
+        batch_key: library_id
+        dask: false
+      extra_hvgs:
+        dask: false
+        overwrite_args:
+          n_top_genes:
+            - 3000
+            - 2000
+            - 4000
+            - 5000
+            - 6000
+            - 7000
+          batch_key: library_id
+        union_over:
+          - disease_hvg
+          - lineage_hvg
+        remove_genes:
+          - XIST
+          # other sex determining genes
+          - https://raw.githubusercontent.com/prabhakarlab/AIDA_Phase1/master/01_QualityControl/list_chrY_nonPAR_genes.txt
+          # immunoglobulin genes
+          - configs/HARP/gene_sets/BCR_genes_to_remove.txt
+          - ^IGL.*
+          - configs/HARP/gene_sets/TCR_genes_to_remove.txt
+          # low quality genes
+          - ^RP.*
+          - ^MT-.*
+
+    integration:
+      var_mask:
+        - highly_variable-batch_key=library_id-n_top_genes=3000
+        - highly_variable-batch_key=library_id-n_top_genes=4000
+        - highly_variable-batch_key=library_id-n_top_genes=5000
+        - highly_variable-batch_key=library_id-n_top_genes=6000
+        - highly_variable-batch_key=library_id-n_top_genes=7000
+        - extra_hvgs-batch_key=library_id-n_top_genes=3000
+        - extra_hvgs-batch_key=library_id-n_top_genes=4000
+        - extra_hvgs-batch_key=library_id-n_top_genes=5000
+        - extra_hvgs-batch_key=library_id-n_top_genes=6000
+        - extra_hvgs-batch_key=library_id-n_top_genes=7000
+      methods:
+        # unintegrated:
+        harmony_pytorch:
+          n_comps: 50
+          scale: true
+    
+    clustering:
+      recompute_umap: false
+      recompute_neighbors: false
+
+  Benchmark_n_hvg_global:
+    input:
+      metrics:
+        harmony--strategy=hvg--n_hvg=3000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:All--integration=0af531bb46.zarr
+        harmony--strategy=hvg--n_hvg=4000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:All--integration=b1bb4b4fac.zarr
+        harmony--strategy=hvg--n_hvg=5000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:All--integration=38accd803e.zarr
+        harmony--strategy=hvg--n_hvg=6000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:All--integration=cccb9fc771.zarr
+        harmony--strategy=hvg--n_hvg=7000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:All--integration=e4bdcf7097.zarr
+        harmony--strategy=extra_hvg--n_hvg=3000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:All--integration=502abb49f5.zarr
+        harmony--strategy=extra_hvg--n_hvg=4000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:All--integration=6b128ba544.zarr
+        harmony--strategy=extra_hvg--n_hvg=5000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:All--integration=556babdc6c.zarr
+        harmony--strategy=extra_hvg--n_hvg=6000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:All--integration=be2ac8b5c0.zarr
+        harmony--strategy=extra_hvg--n_hvg=7000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:All--integration=7f795f9102.zarr
+        
+      collect: metrics
+      majority_voting: collect
+
+    metrics:
+      gene_sets: Other, Doublets_B, Doublets_T, Doublets_Myeloid, IFN_signature, B, Plasma, Myeloid, TCD4, TCD8_NK
+
+  Benchmark_n_hvg_Myeloid:
+    input:
+      metrics:
+        harmony--strategy=hvg--n_hvg=3000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:Myeloid--integration=0af531bb46.zarr
+        harmony--strategy=hvg--n_hvg=4000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:Myeloid--integration=b1bb4b4fac.zarr
+        harmony--strategy=hvg--n_hvg=5000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:Myeloid--integration=38accd803e.zarr
+        harmony--strategy=hvg--n_hvg=6000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:Myeloid--integration=cccb9fc771.zarr
+        harmony--strategy=hvg--n_hvg=7000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:Myeloid--integration=e4bdcf7097.zarr
+        harmony--strategy=extra_hvg--n_hvg=3000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:Myeloid--integration=502abb49f5.zarr
+        harmony--strategy=extra_hvg--n_hvg=4000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:Myeloid--integration=6b128ba544.zarr
+        harmony--strategy=extra_hvg--n_hvg=5000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:Myeloid--integration=556babdc6c.zarr
+        harmony--strategy=extra_hvg--n_hvg=6000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:Myeloid--integration=be2ac8b5c0.zarr
+        harmony--strategy=extra_hvg--n_hvg=7000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:Myeloid--integration=7f795f9102.zarr
+      collect: metrics
+      majority_voting: collect
+
+    metrics:
+      gene_sets: Other, Doublets_B, Doublets_T, IFN_signature, Myeloid
+
+  Benchmark_n_hvg_TCD4:
+    input:
+      metrics:
+        harmony--strategy=hvg--n_hvg=3000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD4--integration=0af531bb46.zarr
+        harmony--strategy=hvg--n_hvg=4000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD4--integration=b1bb4b4fac.zarr
+        harmony--strategy=hvg--n_hvg=5000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD4--integration=38accd803e.zarr
+        harmony--strategy=hvg--n_hvg=6000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD4--integration=cccb9fc771.zarr
+        harmony--strategy=hvg--n_hvg=7000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD4--integration=e4bdcf7097.zarr
+        harmony--strategy=extra_hvg--n_hvg=3000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD4--integration=502abb49f5.zarr
+        harmony--strategy=extra_hvg--n_hvg=4000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD4--integration=6b128ba544.zarr
+        harmony--strategy=extra_hvg--n_hvg=5000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD4--integration=556babdc6c.zarr
+        harmony--strategy=extra_hvg--n_hvg=6000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD4--integration=be2ac8b5c0.zarr
+        harmony--strategy=extra_hvg--n_hvg=7000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD4--integration=7f795f9102.zarr
+      collect: metrics
+      majority_voting: collect
+
+    metrics:
+      gene_sets: Other, Doublets_B, Doublets_Myeloid, IFN_signature, TCD4
+
+  Benchmark_n_hvg_TCD8_NK:
+    input:
+      metrics:
+        harmony--strategy=hvg--n_hvg=3000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD8_NK--integration=0af531bb46.zarr
+        harmony--strategy=hvg--n_hvg=4000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD8_NK--integration=b1bb4b4fac.zarr
+        harmony--strategy=hvg--n_hvg=5000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD8_NK--integration=38accd803e.zarr
+        harmony--strategy=hvg--n_hvg=6000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD8_NK--integration=cccb9fc771.zarr
+        harmony--strategy=hvg--n_hvg=7000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD8_NK--integration=e4bdcf7097.zarr
+        harmony--strategy=extra_hvg--n_hvg=3000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD8_NK--integration=502abb49f5.zarr
+        harmony--strategy=extra_hvg--n_hvg=4000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD8_NK--integration=6b128ba544.zarr
+        harmony--strategy=extra_hvg--n_hvg=5000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD8_NK--integration=556babdc6c.zarr
+        harmony--strategy=extra_hvg--n_hvg=6000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD8_NK--integration=be2ac8b5c0.zarr
+        harmony--strategy=extra_hvg--n_hvg=7000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:TCD8_NK--integration=7f795f9102.zarr
+      collect: metrics
+      majority_voting: collect
+
+    metrics:
+      gene_sets: Other, Doublets_B, Doublets_Myeloid, IFN_signature, TCD8_NK
+
+  Benchmark_n_hvg_B_plasma:
+    input:
+      metrics:
+        harmony--strategy=hvg--n_hvg=3000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:B_plasma--integration=0af531bb46.zarr
+        harmony--strategy=hvg--n_hvg=4000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:B_plasma--integration=b1bb4b4fac.zarr
+        harmony--strategy=hvg--n_hvg=5000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:B_plasma--integration=38accd803e.zarr
+        harmony--strategy=hvg--n_hvg=6000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:B_plasma--integration=cccb9fc771.zarr
+        harmony--strategy=hvg--n_hvg=7000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:B_plasma--integration=e4bdcf7097.zarr
+        harmony--strategy=extra_hvg--n_hvg=3000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:B_plasma--integration=502abb49f5.zarr
+        harmony--strategy=extra_hvg--n_hvg=4000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:B_plasma--integration=6b128ba544.zarr
+        harmony--strategy=extra_hvg--n_hvg=5000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:B_plasma--integration=556babdc6c.zarr
+        harmony--strategy=extra_hvg--n_hvg=6000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:B_plasma--integration=be2ac8b5c0.zarr
+        harmony--strategy=extra_hvg--n_hvg=7000: data/pipeline/HARP/label_transfer/dataset~Benchmark_n_hvg/file_id~clustering:integration:preprocessing:B_plasma--integration=7f795f9102.zarr
+      collect: metrics
+      majority_voting: collect
+      marker_genes: majority_voting
+
+    metrics:
+      gene_sets: Other, Doublets_T, Doublets_Myeloid, IFN_signature, B, Plasma
+
+    marker_genes:
+      sample: sample_id
+      groups:
+        - majority_reference--metrics:harmony--strategy=hvg--n_hvg=3000
+        - leiden_1.0_1--metrics:harmony--strategy=hvg--n_hvg=3000
+        - majority_reference--metrics:harmony--strategy=extra_hvg--n_hvg=3000
+        - leiden_1.0_1--metrics:harmony--strategy=extra_hvg--n_hvg=3000
+        - harmonized_cellhint
+        - Level_2
+        - Level_3
+      marker_genes: B, Plasma
+      rank_genes_groups:
+        method: wilcoxon
+        reference: rest
+      plot:
+        n_genes: 5
+        group_order: configs/HARP/cell_type_order.txt
+        layer: layers/normcounts

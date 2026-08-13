@@ -1,0 +1,307 @@
+# Note: relative paths must be relative to the project root, not the directory of the config file.
+
+output_dir: data/pipeline/HARP
+images: data/images/HARP
+use_gpu: true
+
+funkyheatmap:
+  n_top: 50
+  group_col: dataset
+  group_col_order:
+    - Benchmark_n_hvg_B_plasma
+    - Benchmark_n_hvg_TCD4
+    - Benchmark_n_hvg_TCD8_NK
+    - Benchmark_n_hvg_Myeloid
+  scale: true
+  scale_by_group: true
+  metric_order:
+    - ARI
+    - NMI
+    - "M's I gs:Red Blood Cell"
+    - "M's I gs:Platelet"
+    - "M's I gs:Doublets_B"
+    - "M's I gs:Doublets_T"
+    - "M's I gs:Doublets_Myeloid"
+    - "M's I gs:ISG"
+    # B cell gene sets
+    - "M's I gs:B transitional"
+    - "M's I gs:B naive"
+    - "M's I gs:B memory"
+    - "M's I gs:B memory IGHMhi"
+    - "M's I gs:B memory IGHMlo"
+    - "M's I gs:B switched FCRL3+"
+    - "M's I gs:B atypical"
+    - "M's I gs:Proliferating_B"
+    - "M's I gs:Plasma cell"
+    - "M's I gs:Plasmablast"
+    - "M's I gs:Proliferating_BPlasma"
+    # T cell gene sets
+    - "M's I gs:CD4+ T naive/CM"
+    - "M's I gs:CD4+ T cyt"
+    - "M's I gs:Treg"
+    - "M's I gs:RTE"
+    # T CD8
+    - "M's I gs:CD8+ T naive/CM"
+    - "M's I gs:NK cell"
+    - "M's I gs:NK CD16hi"
+    - "M's I gs:NK CD56hi"
+    - "M's I gs:MAIT"
+    - "M's I gs:gdT"
+    - "M's I gs:ILC"
+    - "M's I gs:dnT"
+    # Myeloid gene sets
+    - "M's I gs:CD14+ Monocyte"
+    - "M's I gs:CD16+ Monocyte"
+    - "M's I gs:CD16+ Monocyte C1Q"
+    - "M's I gs:cDC1"
+    - "M's I gs:cDC2"
+    - "M's I gs:cDC3"
+    - "M's I gs:ASDC"
+    - "M's I gs:pDC"
+
+defaults:
+  merge:
+    merge_strategy: inner
+    dask: true
+    backed: true
+    threads: 20
+
+  subset:
+    sample_key: sample_id
+    n_cells: 1_000_000
+    strategy: by_sample
+    dask: true
+    backed: true
+
+  split_data:
+    dask: true
+    backed: true
+    fail_on_empty_subset: true
+    key: lineage_celltypist
+    values:
+      - TCD8_NK_cells
+      - TCD4_cells
+      - Myeloid
+      - B_cells
+      - Other
+
+  clustering:
+    algorithm: leiden
+    use_gpu: true
+    neighbors:
+      use_rep: X_emb
+      n_neighbors: 100
+      metric: euclidean
+    resolutions: 1.0
+    hierarchy:
+      2: 0.5
+      3: 0.2
+    plots:
+      plot_centroids:
+        - lineage_celltypist
+        - harmonized_cellhint
+        - Level_1
+        - Level_2
+        - Level_3
+      colors:
+        - assay
+        - batch
+        - library_id
+        - study
+        - disease_coarse
+        - sex
+        - age_midpoint
+        - scrublet_score
+        - n_genes
+        - n_counts
+        - percent_mito
+
+  marker_genes:
+    sample: sample_id
+    groups:
+      - leiden_1.0_1
+      # - leiden_1.0_2
+    marker_genes: T_NK_cells,Myeloid,B_plasma,Other
+    rank_genes_groups:
+      reference: rest
+      method: wilcoxon
+    plot:
+      n_genes: 20
+    layer: layers/normcounts
+
+  preprocessing:
+    raw_counts: X
+    normalize:
+      target_sum: 10_000
+    filter:
+      min_cells: 10
+    highly_variable_genes:
+      n_top_genes: 5000
+      batch_key: library_id
+      dask: false
+    extra_hvgs:
+      dask: false
+      overwrite_args:
+        n_top_genes: 3000
+        batch_key: library_id
+      union_over:
+        - disease_hvg
+        - lineage_hvg
+      remove_genes:
+        - XIST
+        # other sex determining genes
+        - https://raw.githubusercontent.com/prabhakarlab/AIDA_Phase1/master/01_QualityControl/list_chrY_nonPAR_genes.txt
+        # immunoglobulin genes
+        - configs/HARP/gene_sets/BCR_genes_to_remove.txt
+        - ^IGL.*
+        - configs/HARP/gene_sets/TCR_genes_to_remove.txt
+        # low quality genes
+        - ^RP.*
+        - ^MT-.*
+    assemble:
+      - normalize
+      - highly_variable_genes
+      - extra_hvgs
+    plot_centroids:
+      - lineage_celltypist
+      - lineage_refined
+      - harmonized_cellhint
+      - sublineage
+      - cell_type
+      - author_annotation
+    colors:
+      - batch
+      - library_id
+      - study
+      - celltypist_Healthy_COVID19_PBMC:majority_voting
+      - majority_reference
+      - qc_celltype
+      - disease
+      - sex
+      - assay
+      - qc_status
+      - scrublet_score
+      - doubletdetection_score
+      - n_genes
+      - n_counts
+      - percent_mito
+      - CXCL10
+      - IFI6
+      - XIST
+
+  integration:
+    threads: 5
+    raw_counts: layers/counts
+    norm_counts: layers/normcounts
+    var_mask: extra_hvgs
+    neighbors:
+      n_neighbors: 100
+    label: harmonized_cellhint
+    batch: library_id
+    output_types:
+      - embed
+    plots:
+      plot_centroids:
+        - Level_1
+        - Level_2
+        - Level_3
+        - lineage_celltypist
+        - harmonized_cellhint
+      colors:
+        - assay
+        - library_id
+        - study
+        - disease_coarse
+        - disease_severity
+        - sex
+        - age_midpoint
+        - scrublet_score
+        - n_genes
+        - n_counts
+        - percent_mito
+        - self_reported_ethnicity
+        - CXCL10
+        - IFI6
+        - XIST
+        # platelet markers
+        - PPBP
+        - TUBB1
+        - ITGA2B
+        - PF4
+        - GP1BB
+        # Red Blood Cell markers
+        - HBA1
+        - HBA2
+        - HBB
+        # T cell
+        - CD4
+        - CD8A
+        - TRDV2
+        - TRGV9
+        - GZMB
+        - GZMH
+        - GNLY
+        - TRAV1-2
+        - NKG7
+        - TYROBP
+        - KIT
+        - FOXP3
+    methods:
+      harmony_pytorch:
+        n_comps: 50
+        scale: true
+
+  label_transfer:
+    majority_reference:
+      reference_key: harmonized_cellhint
+      query_key: leiden_1.0_3
+      crosstab_kwargs:
+        dropna: true
+
+  majority_voting:
+    columns:
+      - majority_reference--.*
+
+  metrics:
+    unintegrated: layers/normcounts
+    raw_counts: layers/counts
+    var_mask: integration_features
+    clustering:
+      precomputed_key: leiden_1.0_2
+    parse_file_id: true
+    funkyheatmap:
+      weight_batch: 0.5
+      group_col: n_hvg
+      scale: true
+      scale_by_group: false
+    output_type: embed
+    label: harmonized_cellhint
+    batch: library_id
+    covariates:
+      - percent_mito
+      - scrublet_score
+      - n_counts
+      - n_genes
+      - percent_ribo
+    gene_sets: B, Plasma, TCD8_NK, TCD4, Other, IFN_signature
+    metrics:
+      - nmi
+      - ari
+      - pcr_comparison
+      - morans_i_genescore
+      - bras_batch
+      - kbet_pg
+
+  collect:
+    sep: --
+    same_slots:
+      - var
+      - layers
+    merge_slots:
+      - obs
+      - obsm
+      - obsp
+      - uns
+    skip_slots:
+      - X
+      - raw

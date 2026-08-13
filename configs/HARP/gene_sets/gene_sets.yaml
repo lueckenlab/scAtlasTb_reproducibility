@@ -1,0 +1,406 @@
+MARKER_GENES:
+  TCD4:
+    # CD4: # general
+    #   - CD3D
+    #   - CD3G
+    #   - CD3E
+    #   - CD4
+    
+    # SAF1 CD4+ T naive/CM: # continuous
+      #- CCR7
+      #- SELL
+      #- LEF1
+      #- TCF7
+      #- IL7R
+      # - LTB
+
+    RTE: # specific
+      - SOX4
+      - CHI3L2
+      - LRRN3
+
+    CD4+ T naive/CM: # continuous
+      - SELL
+      - LEF1
+      - TCF7
+
+    # CD4+ T EM: # continuous
+    #   - GZMK
+    #   - CCL5
+  
+    CD4+ T cyt: # specific
+      - GZMA
+      - GZMB
+      - GZMH
+      - GNLY
+      - PRF1
+      - NKG7
+      - ADGRG1
+      - ZEB2
+    
+    #SAF1 CD4+ T cyt: # specific
+      # - GZMA
+      #- GZMB
+      #- GZMH
+      #- GNLY
+      # - PRF1
+      #- NKG7
+      #- ADGRG1
+      #- ZEB2
+
+   # SAF2 CD4+ T cyt: # specific
+      # - GZMA
+     # - GZMB
+     # - GZMH
+     # - GNLY
+      # - PRF1
+     # - NKG7
+
+    Treg: # specific
+      - FOXP3
+      - RTKN2
+      - IL2RA
+      - CTLA4
+      - TIGIT
+      - DUSP4
+  
+
+  TCD8_NK:
+    
+    #TCD8: # general
+    #  - CD3D
+    #  - CD3G
+    #  - CD3E
+    #  - CD8A
+    #  - CD8B
+    
+    #SAF1 CD8+ T naive/CM: # continuous
+    #  - CCR7
+    #  - SELL
+    #  - LEF1
+    #  - TCF7
+    #  - IL7R
+    #   - LTB
+
+    RTE: # specific
+      - SOX4
+      - CHI3L2
+      - LRRN3
+
+    CD8+ T naive/CM: # continuous
+      - SELL
+      - LEF1
+      - TCF7
+    
+    # CD8+ T cyt: # specific
+    #   - GZMB
+    #   - GZMH
+    #   - GNLY
+    #   - PRF1
+    #   - NKG7
+
+    # CD8+ T GZMKhi:
+    #   # - TCF7
+    #   - GZMK
+    #   # - CCL5
+    #   # - CST7
+    
+    # CD8+ T GZMBhi:
+    #   # - CCL5
+    #   # - CST7
+    #   - GZMB
+    #   # - GNLY
+    #   # - FGFBP2
+    #   - GZMH
+    #   - PRF1
+    
+    NK cell: # general
+      # - NKG7
+      - TYROBP
+      - KLRD1
+      # - FCGR3A
+      # - NCAM1
+      # - XCL1
+      # - XCL2
+      - KLRC1
+      - KLRC2
+    
+    NK CD16hi: # specific
+      - FCGR3A
+
+    NK CD56hi: # specific
+      - NCAM1 # (CD56)
+      - XCL1
+      - XCL2
+      - KLRC1
+
+    MAIT: # specific
+      - TRAV1-2
+      - NCR3
+      - SLC4A10
+      - KLRB1
+
+    gdT: # specific
+      - TRDC
+      - TRDV2
+      - TRGV9
+    
+    ILC: # specific
+      - KIT
+      - LINC01229
+      - TTLL10
+      - TRDC
+      - TNFRSF18
+    
+    dnT: # specific
+      - FXYD2
+      - AC004585.1
+      - PTPN3
+      - MIR4422HG
+  
+  Myeloid:
+    # Monocyte:
+    #   - CD68
+    
+    #SAF1 CD14+ Monocyte:
+      #- CD14
+      # - CSF3R
+      #- S100A12
+      #- S100A8
+      #- S100A9
+    
+    CD14+ Monocyte:
+      - CD14
+      - CSF3R
+      # - S100A12
+      # - S100A8
+      # - S100A9
+    
+    CD16+ Monocyte:
+      - FCGR3A # CD16
+      - CX3CR1
+      - CDKN1C
+      - CSF1R
+    
+    CD16+ Monocyte C1Q:
+      - C1QA
+      - C1QB
+      - C1QC
+    
+    #intermediate Monocyte:
+    #  - CD14
+    #  - FCGR3A #(CD16)
+    #  - HLA-DR
+    #  - CCL5
+   #   - CD11C # (ITGAX)
+    #  - CCCR5
+    #  - CX3CR1
+    #  - CCR2
+    
+    cDC1:
+      - CLEC9A
+      - THBD
+      - CADM1
+      - BATF3
+      - C1orf54
+    
+    cDC2:
+      - CLEC10A
+      - CD1C
+      # - CD14
+      # - FCER1A
+    
+    cDC3:
+      - CD1C
+      # - FCER1A
+      - CD163
+      # - CD14
+      - S100A8
+      - S100A9
+      - CD11C # (ITGAX)
+    
+    ASDC:
+      - AXL
+      - PPP1R14A
+      - SIGLEC6
+      - CD22
+    
+    pDC:
+      - ITM2C
+      - PLD4
+      - TCF4
+      - LILRA4
+      - IL3RA
+      - SERPINF1
+      - CLEC4C
+      - MZB1
+      - JCHAIN
+      
+    #SAF2 pDC:
+      # - ITM2C
+      # - PLD4
+      # - TCF4
+      #- LILRA4
+      # - IL3RA
+      # - SERPINF1
+      #- CLEC4C
+      #- MZB1
+      #- JCHAIN
+
+  B:
+    # B cell:
+    #   - MS4A1
+    #   - CD79A
+    #   - CD19
+    #   - BANK1
+
+    B transitional:
+      - SOX4
+
+    B naive:
+      - TCL1A
+      - FCER2
+      # - IGHM
+      # - IGHD
+
+    B memory:
+      - CD27
+      - TNFRSF13B
+
+    B memory IGHMhi:
+      - IGHM
+      - IGHD
+
+    B memory IGHMlo:
+      - IGHA1
+      - IGHA2
+      - IGHG1
+      - IGHG2
+      - IGHG3
+      - IGHG4
+
+    B switched FCRL3+:
+      - FCRL3
+      - FCRL5
+    
+    B atypical:
+      - FGR
+      # - EMP3
+      - TBX21
+      - ITGAX
+      # - FCRL4
+
+    Proliferating_B:
+      - MKI67
+      - CDK1
+      - TOP2A
+      - MS4A1
+      - CD79B
+
+  Plasma:
+    Plasma cell:
+      - MZB1
+      - JCHAIN
+      - TNFRSF17
+      - ITM2C
+      - DERL3
+
+    Plasmablast:
+      - MKI67
+      - CDK1
+      - MZB1
+      - JCHAIN
+      # - MS4A1
+      # - CD79B
+    
+    Proliferating_BPlasma:
+      - MKI67
+      - CDK1
+      - TOP2A    
+  
+  Other:
+    Platelet:
+      - PPBP
+      - TUBB1
+      - ITGA2B
+      - PF4
+      - GP1BB
+      - CD63
+    Red Blood Cell:
+      - HBA1
+      - HBA2
+      - HBB
+    # Baso/Eos:
+    #   - EPX
+    #   - FCER1A
+    #   - HDC
+    #   - MS4A2
+    #   - PRG2
+    #   - MS4A3
+    #   - TPSAB1
+    #   - TPSB2
+    #   - CLC
+
+  Doublets_B: 
+    - MS4A1
+    - CD79A
+    - CD79B
+  
+  Doublets_Myeloid: 
+    - LYZ
+    - VCAN
+
+  Doublets_T: 
+    - CD3D
+    - CD3G
+    - CD3E
+
+  Progenitor:
+    HPC:
+      - KIT
+      - CD34
+      - FCER1A
+      - AVP
+      - IL1B
+      - CD38
+      - GATA1
+    Lymhoid progenitor:
+      - CD34
+      - MME
+    Myeloid progenitor:
+      - CD34
+      - AVP
+      - CD38
+      - MPO
+  
+  IFN_signature:
+    ISG:
+      - IRF7
+      #- XAF1
+      #- UBE2L6
+      #- TRIM22
+      #- STAT1
+      #- SP110
+      #- SAMD9L
+      #- SAMD9
+      #- PLSCR1
+      #- PARP9
+      - OAS2
+      - OAS1
+      - MX2
+      - MX1
+      - LY6E
+      - ISG15
+      - ISG20
+      - IFIT1
+      - IFIT2
+      - IFIT3
+      - IFI6
+      - IFI44L
+      #- IFI35
+      #- HERC5
+      #- EPSTI1
+      #- EIF2AK2
+      #- CMPK2
+      - BST2
+      - RSAD2
