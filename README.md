@@ -41,7 +41,7 @@ This is the fastest way to find the code behind a specific panel. Panels not lis
 | Figure | Analysis | Pipeline config | Notebook | Output |
 | --- | --- | --- | --- | --- |
 | Fig. 1F, Supp. Fig. 1A–B | Storage/scalability benchmark | `scripts/storage_compare.sh` (no Snakemake config) | [`notebooks/Scalability/Fig1F.ipynb`](notebooks/Scalability/README.md) | `figures/figure1/` |
-| Fig. 2A | HLCA QC thresholds per study/lineage | [`configs/HLCA/QC/`](configs/HLCA/QC/README.md) | [`notebooks/QC/HLCA_QC_overview.ipynb`](notebooks/QC) | — |
+| Fig. 2A | HLCA QC thresholds per study/lineage | [`configs/HLCA/QC/`](configs/HLCA/QC/README.md) | — | — |
 | Fig. 2C, 2D, Extended Fig. 2 | HLCA HighQC vs. original atlas comparison | [`configs/HLCA/QC/`](configs/HLCA/QC/README.md) | [`notebooks/HLCA/Fig2C_marker_gene_comparison.ipynb`](notebooks/HLCA/README.md), [`Fig2D_lowQC_cluster.ipynb`](notebooks/HLCA/README.md) | `figures/figure2/` |
 | Fig. 3C–E, Extended Fig. 3 | HRCA integration benchmark (trade-offs, funkyheatmap) | [`configs/HRCA/`](configs/HRCA/README.md) | [`notebooks/HRCA/Fig3CDE_benchmark_evaluation.ipynb`](notebooks/HRCA/README.md) | `figures/figure3/` |
 | Fig. 3F, Supp. Fig. 6 | HRCA majority-voting disagreement / doublets (AC lineage) | [`configs/HRCA/`](configs/HRCA/README.md) | [`notebooks/HRCA/Fig3F.ipynb`](notebooks/HRCA/README.md) | `figures/figure3/F/` |
