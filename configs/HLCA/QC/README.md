@@ -44,11 +44,11 @@ Uncomment the `follow_up_AT2` block at the bottom of `followup_qc.yaml` for the 
 
 All data lands under `data/pipeline/HLCAv1/QC/<module>/dataset~<name>/...` and plots under `data/images/HLCAv1/QC/<module>/dataset~<name>/...`, per `output_dir`/`images` in `configs/HLCA/QC/defaults.yaml`.
 
-Outputs specifically used for the paper's figures (see `../../../notebooks/QC/` and `../../../notebooks/HLCA/`):
+Outputs specifically used for the paper's figures (see `../../../notebooks/HLCA/` for the downstream figure notebooks):
 
 | Figure | Source output | Consuming notebook |
 | --- | --- | --- |
-| Fig. 2A (per-study/lineage QC thresholds) | `qc` module's `thresholds.tsv` / `qc_stats.tsv` and joint/summary plots under `data/images/HLCAv1/QC/qc/dataset~{QC,QC_extended}/...` | `notebooks/QC/HLCA_QC_overview.ipynb` |
+| Fig. 2A (per-study/lineage QC thresholds) | `qc` module's `thresholds.tsv` / `qc_stats.tsv` and joint/summary plots under `data/images/HLCAv1/QC/qc/dataset~{QC,QC_extended}/...` | — |
 | Fig. 2C (marker gene overlap, HighQC vs. HLCA), Fig. 2D + Extended Fig. 2 (low-QC cluster, graph dissimilarity) | `marker_genes` output of `HLCAv1_extended`: `data/pipeline/HLCAv1/QC/marker_genes/dataset~HLCAv1_extended/file_id~majority_voting:collect:HLCAv1_extended.zarr` — this single AnnData carries both the HLCA- and HighQC-mapped embeddings/annotations for the extension cohort | `notebooks/HLCA/Fig2C_marker_gene_comparison.ipynb` → `figures/figure2/C/`, `notebooks/HLCA/Fig2D_lowQC_cluster.ipynb` → `figures/figure2/D/` |
 
 The `highQC` and `QC` entries' intermediate `integration`/`reference_mapping`/`merge` outputs (the de novo scANVI reference and the query-mapped low-QC cells) are the upstream inputs that `HLCAv1_extended` (in `extended.yaml`) re-maps and re-annotates into the single file above; they aren't consumed directly by a figure notebook.

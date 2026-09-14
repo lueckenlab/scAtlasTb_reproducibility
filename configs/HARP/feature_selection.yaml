@@ -185,5 +185,4 @@ DATASETS:
         reference: rest
       plot:
         n_genes: 5
-        group_order: configs/HARP/cell_type_order.txt
         layer: layers/normcounts

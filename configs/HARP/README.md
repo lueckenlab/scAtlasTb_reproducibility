@@ -42,8 +42,6 @@ Swap `metrics_all` for another module target (see the [top-level README](../READ
 data/input/hca_out/relabel/dataset~Benchmark_prepare_data/file_id~All.zarr
 ```
 
-`configs/HARP/feature_selection.yaml`'s `Benchmark_n_hvg_B_plasma.marker_genes.plot.group_order` also expects `configs/HARP/cell_type_order.txt`, which is not shipped here — supply it or drop that line before running `marker_genes_all`.
-
 ## Output
 
 Running this config, all data lands under `data/pipeline/HARP/<module>/dataset~<name>/...` and plots under `data/images/HARP/<module>/dataset~<name>/...`, per `output_dir`/`images` in `configs/HARP/defaults.yaml`.
