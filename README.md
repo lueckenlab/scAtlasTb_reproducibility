@@ -13,12 +13,12 @@ The pipeline itself (the modules `run.sh` calls into) lives in the separate [lue
 | `figures/` | Rendered SVG panels, one subdirectory per main figure (`figure1/` … `figure5/`), written by the notebooks above. |
 | `scripts/` | Standalone helper scripts outside the Snakemake pipeline: `storage_compare.sh` (feeds Fig. 1F / Supp. Fig. 1) and `scalability_comparison/` (drivers for the scib-pipeline and HPCell baselines scAtlasTb is compared against for scalability). |
 | `.profiles/` | Snakemake cluster-execution profiles (SLURM/`czbiohub`, LSF, local) passed to `run.sh` wrappers. |
-| `envs/` | Extra conda environment(s) needed only for the R-based HPCell scalability baseline (`hpcell.yaml`, used with `hpcell.sif`). The main pipeline environment (`scanpy.yaml`) lives in the `scAtlasTb` repo, not here. |
+| `envs/` | Fully pinned conda environment exports (`conda env export`, exact versions and builds, linux-64) of the environments the paper analyses were actually run with: `snakemake.yaml` (Snakemake 7.31.1, used to run the workflows) and every environment the pipeline activates for the configs in this repo (`scanpy`, `rapids_singlecell`, `scib`, `scib_metrics`, `pegasus`, `qc`, `plots`, `funkyheatmap`, `scvi-tools`, `scarches`, `sample_representation`). |
 | `data/` | Pipeline inputs/outputs (`input/`, `pipeline/`, `output/`, `images/`). Gitignored — not shipped in this repo; regenerate by running the configs, or point at your own copies (see dataset URLs in the manuscript's Code and data availability section). |
 
 ## Setup
 
-1. Clone [`scAtlasTb`](https://github.com/lueckenlab/scAtlasTb) alongside this repo (configs reference it as `../scAtlasTb`) and install its `envs/scanpy.yaml` conda environment — this provides both the pipeline modules and the packages the notebooks import.
+1. Clone [`scAtlasTb`](https://github.com/lueckenlab/scAtlasTb) alongside this repo (configs reference it as `../scAtlasTb`) and install its `envs/scanpy.yaml` conda environment — this provides both the pipeline modules and the packages the notebooks import. The pipeline activates its conda environments by name, so to match the exact package versions used for the paper, create them from this repo's [`envs/`](envs/) instead (e.g. `conda env create -f envs/scanpy.yaml`; the file sets the env name).
 2. Pick a Snakemake execution profile under `.profiles/` (or add your own) and adjust cluster resources in `configs/<workflow>/*.yaml` / the profile's `cluster_config.yaml` if you're not on the original SLURM cluster.
 3. Set/verify data paths in the relevant `configs/<atlas>/` files (input datasets, `output_dir`, `images`) before running anything — see [`configs/README.md`](configs/README.md) for the general config structure and [`configs/load_data/`](configs/load_data/README.md) for downloading the source CELLxGENE datasets.
 
@@ -33,6 +33,9 @@ Each figure is reproduced in two steps:
    ```
    See [`configs/README.md#picking-a-target`](configs/README.md#picking-a-target) for the full module → target table, and each workflow's own README (linked below) for which `DATASETS` entries to run and in what order.
 2. **Run the matching notebook** under `notebooks/<atlas>/`, which reads the pipeline's output `.zarr` objects and writes the manuscript panel(s) as SVGs into `figures/<figureN>/`.
+
+> Note
+> The exact conda environment versions used for the paper are captured in this repo's `envs/` directory. To ensure reproducibility, create and activate these environments instead of the ones in the `scAtlasTb` repo.
 
 ## Figure → code map
 
