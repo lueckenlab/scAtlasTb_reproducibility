@@ -29,7 +29,7 @@ cluster-cancel: scancel
 cluster-status: .profiles/slurm-status.py
 rerun-triggers:
   - mtime
-  - params
+ # - params
   - input
 #  - code
 #  - software-env
