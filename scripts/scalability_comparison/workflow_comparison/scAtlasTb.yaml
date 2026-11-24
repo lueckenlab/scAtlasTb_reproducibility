@@ -1,0 +1,58 @@
+# scAtlasTb arm of the workflow comparison: preprocessing -> integration -> metrics.
+#
+# run_scAtlasTb.sh layers a small per-run config on top of this file that sets
+# output_dir, images and DATASETS.HLCA.input.preprocessing (one subsample from subsample.py).
+use_gpu: false
+env_mode: local  # use the pre-existing conda environments by name
+
+DATASETS:
+
+  HLCA:
+    input:
+      preprocessing: {}         # set per run
+      integration: preprocessing
+      metrics: integration
+
+    preprocessing:
+      raw_counts: X
+      normalize:
+        target_sum: 10_000
+      highly_variable_genes:
+        n_top_genes: 2000
+      pca:
+        n_comps: 50
+      assemble:
+        - normalize
+        - highly_variable_genes
+        - pca
+        - neighbors
+
+    integration:
+      raw_counts: layers/counts
+      norm_counts: layers/normcounts
+      batch: dataset
+      label: ann_finest_level
+      var_mask: highly_variable
+      methods:
+        unintegrated:
+        combat:
+        harmonypy:
+        scvi:  # scvi-tools defaults (max_epochs scales with the number of cells)
+        bbknn:
+
+    metrics:
+      unintegrated: layers/normcounts
+      batch: dataset
+      label: ann_finest_level
+      metrics:
+        - nmi
+        - ari
+        - asw_label
+        - asw_batch
+        - isolated_label_asw
+        - isolated_label_f1
+        - graph_connectivity
+        - ilisi
+        - clisi
+        # pcr_comparison is left out: with var_mask set, its unintegrated PCA step fails on
+        # the full output of combat (HVG-only var vs. all-gene layers)
